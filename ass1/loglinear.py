@@ -25,10 +25,11 @@ def classifier_output(x, params):
     Return the output layer (class probabilities) 
     of a log-linear classifier with given params on input x.
     """
+    #
     W,b = params
     # YOUR CODE HERE.
-    
-    return probs
+
+    return 
 
 def predict(x, params):
     """
