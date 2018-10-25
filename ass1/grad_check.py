@@ -24,7 +24,7 @@ def gradient_check(f, x):
         x_minus = x.copy()
         x_minus[ix] -= h
         numeric_gradient = (f(x_plus)[0] - f(x_minus)[0]) / (2*h)
-        raise NotImplementedError
+        
         ### END YOUR CODE
 
         # Compare gradients
