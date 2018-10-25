@@ -19,11 +19,11 @@ def gradient_check(f, x):
         ### modify x[ix] with h defined above to compute the numerical gradient.
         ### if you change x, make sure to return it back to its original state for the next iteration.
         ### YOUR CODE HERE:
-        x_plus = x 
+        x_plus = x.copy() 
         x_plus[ix] += h
-        x_minus = x 
+        x_minus = x.copy()
         x_minus[ix] -= h
-        numeric_gradient = (f(x_plus) - f(x_minus)) / (2*h)
+        numeric_gradient = (f(x_plus)[0] - f(x_minus)[0]) / (2*h)
         raise NotImplementedError
         ### END YOUR CODE
 
