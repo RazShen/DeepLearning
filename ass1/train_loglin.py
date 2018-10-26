@@ -1,13 +1,12 @@
 import loglinear as ll
 import random
-
+import utils
 STUDENT={'name': 'Raz Shenkman',
          'ID': '311130777'}
 
 def feats_to_vec(features):
     # YOUR CODE HERE.
     # Should return a numpy vector of features.
-    
     return None
 
 def accuracy_on_dataset(dataset, params):
@@ -54,7 +53,8 @@ if __name__ == '__main__':
     # and call train_classifier.
     
     # ...
-   
+    in_dim = len(utils.vocab)
+    out_dim = len(L2I)
     params = ll.create_classifier(in_dim, out_dim)
     trained_params = train_classifier(train_data, dev_data, num_iterations, learning_rate, params)
 
