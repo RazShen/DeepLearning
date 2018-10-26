@@ -13,6 +13,7 @@ def text_to_bigrams(text):
 
 TRAIN = [(l,text_to_bigrams(t)) for l,t in read_data("train")]
 DEV   = [(l,text_to_bigrams(t)) for l,t in read_data("dev")]
+TEST   = [(l,text_to_bigrams(t)) for l,t in read_data("test")]
 
 from collections import Counter
 fc = Counter()

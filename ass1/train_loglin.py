@@ -62,16 +62,25 @@ def train_classifier(train_data, dev_data, num_iterations, learning_rate, params
         print I, train_loss, train_accuracy, dev_accuracy
     return params
 
+def pred_on_test(trained_params, test):
+    prediction_file = open("test.pred", 'w')
+    for q, features in test:
+        x = feats_to_vec(features) # convert features to a vector.
+        y_hat = ll.predict(x,params)
+        y_hat_name_of_lang = [key for key, value in utils.L2I.iteritems() if value == y_hat][0]
+        prediction_file.write(str(y_hat_name_of_lang) + "\n")
+    prediction_file.close()
+
 if __name__ == '__main__':
     # YOUR CODE HERE
     # write code to load the train and dev sets, set up whatever you need,
     # and call train_classifier.
     
     # ...
-    num_iterations = 40
-    learning_rate = 0.08
+    num_iterations = 20
+    learning_rate = 0.3
     in_dim = len(utils.vocab)
     out_dim = len(utils.L2I)
     params = ll.create_classifier(in_dim, out_dim)
     trained_params = train_classifier(utils.TRAIN, utils.DEV, num_iterations, learning_rate, params)
-
+    pred_on_test(trained_params, utils.TEST)
