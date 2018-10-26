@@ -1,12 +1,13 @@
 import loglinear as ll
 import random
 
-STUDENT={'name': 'YOUR NAME',
-         'ID': 'YOUR ID NUMBER'}
+STUDENT={'name': 'Raz Shenkman',
+         'ID': '311130777'}
 
 def feats_to_vec(features):
     # YOUR CODE HERE.
     # Should return a numpy vector of features.
+    
     return None
 
 def accuracy_on_dataset(dataset, params):
