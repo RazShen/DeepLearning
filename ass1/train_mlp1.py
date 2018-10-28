@@ -1,4 +1,4 @@
-import loglinear as ll
+import mlp1 as ml
 import random
 import numpy as np
 import utils
@@ -25,7 +25,7 @@ def accuracy_on_dataset(dataset, params):
         # accuracy is (correct_predictions / all_predictions)
         x = feats_to_vec(features) # convert features to a vector.
         y = utils.L2I[label]       # convert the label to number if needed.
-        y_hat = ll.predict(x,params)
+        y_hat = ml.predict(x,params)
         if y == y_hat:
             good += 1
         else:
@@ -49,13 +49,16 @@ def train_classifier(train_data, dev_data, num_iterations, learning_rate, params
         for label, features in train_data:
             x = feats_to_vec(features) # convert features to a vector.
             y = utils.L2I[label]                  # convert the label to number if needed.
-            loss, grads = ll.loss_and_gradients(x,y,params)
+            loss, grads = ml.loss_and_gradients(x,y,params)
             cum_loss += loss
             # YOUR CODE HERE
             # update the parameters according to the gradients
             # and the learning rate.
             params[0] -= learning_rate * grads[0]
             params[1] -= learning_rate * grads[1]
+            params[2] -= learning_rate * grads[2]
+            params[3] -= learning_rate * grads[3]
+
         train_loss = cum_loss / len(train_data)
         train_accuracy = accuracy_on_dataset(train_data, params)
         dev_accuracy = accuracy_on_dataset(dev_data, params)
@@ -66,7 +69,7 @@ def pred_on_test(trained_params, test):
     prediction_file = open("test.pred", 'w')
     for q, features in test:
         x = feats_to_vec(features) # convert features to a vector.
-        y_hat = ll.predict(x,params)
+        y_hat = ml.predict(x,params)
         y_hat_name_of_lang = [key for key, value in utils.L2I.iteritems() if value == y_hat][0]
         prediction_file.write(str(y_hat_name_of_lang) + "\n")
     prediction_file.close()
@@ -77,10 +80,11 @@ if __name__ == '__main__':
     # and call train_classifier.
     
     # ...
-    num_iterations = 20
+    num_iterations = 30
     learning_rate = 0.3
+    hidden = 10
     in_dim = len(utils.vocab)
     out_dim = len(utils.L2I)
-    params = ll.create_classifier(in_dim, out_dim)
+    params = ml.create_classifier(in_dim, out_dim, hidden)
     trained_params = train_classifier(utils.TRAIN, utils.DEV, num_iterations, learning_rate, params)
     pred_on_test(trained_params, utils.TEST)

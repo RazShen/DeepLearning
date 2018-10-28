@@ -11,7 +11,7 @@
             "program": "${file}",
             "console": "integratedTerminal",
             "stopOnEntry": true,
-            "cwd":"${workspaceFolder}/data"
+            "cwd":"/Users/raz.shenkman/Documents/DL_workspace/ass1/data/"
             
         },
         {
