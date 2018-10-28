@@ -77,9 +77,9 @@ if __name__ == '__main__':
     # write code to load the train and dev sets, set up whatever you need,
     # and call train_classifier.
     
-    num_iterations = 40
-    learning_rate = 0.04
-    hidden = 50
+    num_iterations = 30
+    learning_rate = 0.03
+    hidden = 20
     in_dim = len(utils.vocab)
     out_dim = len(utils.L2I)
     params = ml.create_classifier(in_dim, out_dim, hidden)

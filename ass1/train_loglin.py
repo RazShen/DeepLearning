@@ -77,8 +77,8 @@ if __name__ == '__main__':
     # and call train_classifier.
     
     # ...
-    num_iterations = 20
-    learning_rate = 0.3
+    num_iterations = 30
+    learning_rate = 0.05
     in_dim = len(utils.vocab)
     out_dim = len(utils.L2I)
     params = ll.create_classifier(in_dim, out_dim)

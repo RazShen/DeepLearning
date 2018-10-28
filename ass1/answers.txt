@@ -1,0 +1,12 @@
+1.  Yes, about 3% more (reaching 85% with multilayer perceptron). it is because the hidden layer
+    with the activation function (tanh) enables us to learn better ways to separate the data (can
+    learn to seperate some non-linear seperable data).
+2.  Reaching 59% in log-linear model.
+    Reaching 58% in mlp model.
+    One reason for that is that the features are less diversed and we can learn less from them
+    after switching to unigrams.
+3.  With the parameters:
+        -learning_rate = 0.03
+        -hidden = 16
+    About 13 iterations to correctly solve xor (after epoch
+    30 it correctly solved it)
