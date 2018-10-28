@@ -31,7 +31,7 @@ def loss_and_gradients(x, y, params):
     gb_tag: vector, gradients of b_tag
     """
     # YOU CODE HERE
-    W, b, U, b_tag = params
+    W, b, U, = params
     y_hat = classifier_output(x,params)
     loss = -np.log(y_hat[y])
 
@@ -40,7 +40,7 @@ def loss_and_gradients(x, y, params):
 
     gU = np.outer(gb_tag,np.tanh(np.dot(W,x) + b))
 
-    gb = np.dot(np.dot(gb_tag, U), 1- np.power(np.tanh(np.dot(W,x) + b),2))
+    gb = np.dot(gb_tag, U) * (1 - np.square(np.tanh(np.dot(W,x) + b)))
 
     gW = np.outer(gb ,x)
 

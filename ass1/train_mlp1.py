@@ -2,6 +2,7 @@ import mlp1 as ml
 import random
 import numpy as np
 import utils
+
 STUDENT={'name': 'Raz Shenkman',
          'ID': '311130777'}
 
@@ -54,11 +55,8 @@ def train_classifier(train_data, dev_data, num_iterations, learning_rate, params
             # YOUR CODE HERE
             # update the parameters according to the gradients
             # and the learning rate.
-            params[0] -= learning_rate * grads[0]
-            params[1] -= learning_rate * grads[1]
-            params[2] -= learning_rate * grads[2]
-            params[3] -= learning_rate * grads[3]
-
+            for i,grad in enumerate(grads):
+                params[i] -= learning_rate * grad
         train_loss = cum_loss / len(train_data)
         train_accuracy = accuracy_on_dataset(train_data, params)
         dev_accuracy = accuracy_on_dataset(dev_data, params)
@@ -79,10 +77,9 @@ if __name__ == '__main__':
     # write code to load the train and dev sets, set up whatever you need,
     # and call train_classifier.
     
-    # ...
-    num_iterations = 30
-    learning_rate = 0.3
-    hidden = 10
+    num_iterations = 40
+    learning_rate = 0.04
+    hidden = 50
     in_dim = len(utils.vocab)
     out_dim = len(utils.L2I)
     params = ml.create_classifier(in_dim, out_dim, hidden)
