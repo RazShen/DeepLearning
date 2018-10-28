@@ -31,7 +31,7 @@ def loss_and_gradients(x, y, params):
     gb_tag: vector, gradients of b_tag
     """
     # YOU CODE HERE
-    W, b, U, = params
+    W, b, U, b_tag = params
     y_hat = classifier_output(x,params)
     loss = -np.log(y_hat[y])
 
