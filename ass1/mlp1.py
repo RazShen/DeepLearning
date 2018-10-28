@@ -37,10 +37,11 @@ def loss_and_gradients(x, y, params):
 
     gb_tag = y_hat.copy()
     gb_tag[y] -= 1
+    hidden_output = np.tanh(np.dot(W,x) + b)
+    
+    gU = np.outer(gb_tag,hidden_output)
 
-    gU = np.outer(gb_tag,np.tanh(np.dot(W,x) + b))
-
-    gb = np.dot(gb_tag, U) * (1 - np.square(np.tanh(np.dot(W,x) + b)))
+    gb = np.dot(gb_tag, U) * (1 - np.square(hidden_output))
 
     gW = np.outer(gb ,x)
 
