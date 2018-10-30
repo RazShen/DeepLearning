@@ -40,15 +40,22 @@ def loss_and_gradients(x, y, params):
     grad_saver[y] -= 1
     grads = []
     h = [x]
-    for W_i, b_i in zip(params[0:-2:2], params[1:-1:2]):
-        h.append(np.tanh(np.dot(h[-1], W_i) + b_i))
+    """
+    Calculate the h_i = tanh(z_i) = W_i*x + b_i from h_1 to h_n
+    """
+    for W, b in zip(params[0:-2:2], params[1:-1:2]):
+        h.append(np.tanh(np.dot(h[-1], W) + b))
 
-    for i, (W_i, b_i) in enumerate(zip(params[-2::-2], params[-1::-2])):
-        g_b_i = np.copy(grad_saver)
-        g_w_i = np.outer(h[-i - 1], grad_saver)
-        grads.append(g_b_i)
-        grads.append(g_w_i)
-        grad_saver = np.dot(W_i, grad_saver) * (1 - np.square(np.tanh((h[-i - 1]))))
+    """
+    Calculate the gradients of each layer (start from the last layer)
+    """
+    for W, b in zip(params[-2::-2], params[-1::-2]):
+        gb_i = np.copy(grad_saver)
+        h_last = h.pop()
+        gw_i = np.outer(h_last, grad_saver)
+        grads.append(gb_i)
+        grads.append(gw_i)
+        grad_saver = np.dot(W, grad_saver) * (1 - np.square(np.tanh((h_last))))
 
     grads = list(reversed(grads))
     return loss, grads

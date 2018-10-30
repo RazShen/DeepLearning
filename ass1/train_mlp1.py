@@ -78,8 +78,8 @@ if __name__ == '__main__':
     # and call train_classifier.
     
     num_iterations = 30
-    learning_rate = 0.03
-    hidden = 20
+    learning_rate = 0.02
+    hidden = 30
     in_dim = len(utils.vocab)
     out_dim = len(utils.L2I)
     params = ml.create_classifier(in_dim, out_dim, hidden)

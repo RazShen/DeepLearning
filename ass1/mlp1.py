@@ -49,12 +49,12 @@ def loss_and_gradients(x, y, params):
 
 
 def uniform_vec(dim1):
-    epsilon = 1e-4
+    epsilon = np.sqrt(6) / (np.sqrt(dim1))
     return np.random.uniform(-epsilon, epsilon, dim1)
 
 
 def uniform_mat(dim1, dim2):
-    epsilon = 1e-4
+    epsilon = np.sqrt(6) / (np.sqrt(dim1 + dim2))
     return np.random.uniform(-epsilon, epsilon, [dim1, dim2]) 
 
 def create_classifier(in_dim, hid_dim, out_dim):
