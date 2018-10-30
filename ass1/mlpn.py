@@ -1,10 +1,16 @@
 import numpy as np
-
+import loglinear as ll
 STUDENT={'name': 'YOUR NAME',
          'ID': 'YOUR ID NUMBER'}
 
+
 def classifier_output(x, params):
     # YOUR CODE HERE.
+    h = x.copy()
+    for W,b in zip(params[0:len(params)-1:2], params[1:len(params):2]):
+        z = np.dot(h,W) + b
+        h = np.tanh(z)
+    probs = ll.softmax(z)
     return probs
 
 def predict(x, params):
@@ -28,7 +34,24 @@ def loss_and_gradients(x, y, params):
     you should not have gW2 and gb2.)
     """
     # YOU CODE HERE
-    return ...
+    y_hat = classifier_output(x,params)
+    loss = - np.log(y_hat[y])
+    grad_saver = y_hat.copy()
+    grad_saver[y] -= 1
+    grads = []
+    h = [x]
+    for W_i, b_i in zip(params[0:-2:2], params[1:-1:2]):
+        h.append(np.tanh(np.dot(h[-1], W_i) + b_i))
+
+    for i, (W_i, b_i) in enumerate(zip(params[-2::-2], params[-1::-2])):
+        g_b_i = np.copy(grad_saver)
+        g_w_i = np.outer(h[-i - 1], grad_saver)
+        grads.append(g_b_i)
+        grads.append(g_w_i)
+        grad_saver = np.dot(W_i, grad_saver) * (1 - np.square(np.tanh((h[-i - 1]))))
+
+    grads = list(reversed(grads))
+    return loss, grads
 
 def create_classifier(dims):
     """
@@ -51,5 +74,11 @@ def create_classifier(dims):
     second layer, and so on.
     """
     params = []
+    
+    for first_dim,second_dim in zip(dims, dims[1:]):
+        epsilon = np.sqrt(6) / (np.sqrt(first_dim + second_dim)) 
+        params.append(np.random.uniform(-epsilon, epsilon, [first_dim, second_dim]))
+        params.append(np.random.uniform(-epsilon, epsilon, [second_dim]))
     return params
+
 
