@@ -77,8 +77,8 @@ if __name__ == '__main__':
     # write code to load the train and dev sets, set up whatever you need,
     # and call train_classifier.
     
-    num_iterations = 30
-    learning_rate = 0.05
-    params = ml.create_classifier([len(utils.F2I),60,40,len(utils.L2I)])
+    num_iterations = 40
+    learning_rate = 0.01
+    params = ml.create_classifier([len(utils.F2I),50,40,len(utils.L2I)])
     trained_params = train_classifier(utils.TRAIN, utils.DEV, num_iterations, learning_rate, params)
-    #pred_on_test(trained_params, utils.TEST)
+    pred_on_test(trained_params, utils.TEST)

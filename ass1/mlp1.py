@@ -48,12 +48,12 @@ def loss_and_gradients(x, y, params):
     return loss, [gW,gb,gU,gb_tag]
 
 
-def uniform_vec(dim1):
+def xavier_vec(dim1):
     epsilon = np.sqrt(6) / (np.sqrt(dim1))
     return np.random.uniform(-epsilon, epsilon, dim1)
 
 
-def uniform_mat(dim1, dim2):
+def xavier_mat(dim1, dim2):
     epsilon = np.sqrt(6) / (np.sqrt(dim1 + dim2))
     return np.random.uniform(-epsilon, epsilon, [dim1, dim2]) 
 
@@ -66,10 +66,10 @@ def create_classifier(in_dim, hid_dim, out_dim):
     return:
     a flat list of 4 elements, W, b, U, b_tag.
     """
-    W = uniform_mat(hid_dim, in_dim)
-    b = uniform_vec(hid_dim)
-    U = uniform_mat(out_dim, hid_dim)
-    b_tag = uniform_vec(out_dim)
+    W = xavier_mat(hid_dim, in_dim)
+    b = xavier_vec(hid_dim)
+    U = xavier_mat(out_dim, hid_dim)
+    b_tag = xavier_vec(out_dim)
     params = [W,b,U,b_tag]
     return params
 

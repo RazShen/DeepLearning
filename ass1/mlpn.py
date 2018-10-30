@@ -1,7 +1,7 @@
 import numpy as np
 import loglinear as ll
-STUDENT={'name': 'YOUR NAME',
-         'ID': 'YOUR ID NUMBER'}
+STUDENT={'name': 'Raz Shenkman',
+         'ID': '311130777'}
 
 
 def classifier_output(x, params):
