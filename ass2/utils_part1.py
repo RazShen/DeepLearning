@@ -56,11 +56,13 @@ def make_window_of_words(sentences):
         buffed_sentence.extend(sentence)
         buffed_sentence.extend([(end, end), (end, end)])
 
-        for i, (word,tag) in enumerate(buffed_sentence[2:-2]):
-            all_windows.append((word_to_index[buffed_sentence[i][0]],
-                                word_to_index[buffed_sentence[i+1][0]], word_to_index[buffed_sentence[i+2][0]],
-                                word_to_index[buffed_sentence[i+3][0]], word_to_index[buffed_sentence[i+4][0]]))
-            all_tags.append(buffed_sentence[i+2][1])
+        for i, (word,tag) in enumerate(buffed_sentence):
+            if word == start or word == end:
+                continue
+            all_windows.append((word_to_index[buffed_sentence[i-2][0]],
+                                word_to_index[buffed_sentence[i-1][0]], word_to_index[buffed_sentence[i][0]],
+                                word_to_index[buffed_sentence[i+1][0]], word_to_index[buffed_sentence[i+2][0]]))
+            all_tags.append(buffed_sentence[i][1])
     return all_windows, all_tags
 
 
