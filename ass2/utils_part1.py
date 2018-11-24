@@ -1,8 +1,10 @@
 from itertools import izip
 import numpy as np
+import torch
+import torch.utils.data
 start = '*_START_*'
 end = '*_END_*'
-unk = 'UUUNKKK'
+unk = "UUUNKKK"
 word_embedding = {}
 tags = set()
 words = set()
@@ -10,6 +12,8 @@ word_to_index = {}
 index_to_words = {}
 tags_to_index = {}
 index_to_tags = {}
+EMBEDDING_VEC_SIZE = 50
+
 
 def get_word_embedding(vec_file, words_file):
     global start, end
@@ -21,14 +25,14 @@ def get_word_embedding(vec_file, words_file):
         word = str(word)
         word = word.strip("\n").strip()
         word_embedding[word] = vec_numpy
-    word_embedding[start] = np.random.uniform(-1, 1, [1, 50])
-    word_embedding[end] = np.random.uniform(-1, 1, [1, 50])
+    word_embedding[start] = np.random.uniform(-1, 1, [1, EMBEDDING_VEC_SIZE])
+    word_embedding[end] = np.random.uniform(-1, 1, [1, EMBEDDING_VEC_SIZE])
     return word_embedding
 
-def get_tagged_sentences(train_data_file):
-    global tags, words
-    tags = set()
-    words = set()
+
+
+def get_tagged_sentences(train_data_file, dev=False):
+    global tags, words,unk
     sentences = []
     curr_sentence = []
     with open(train_data_file, "r") as train_file:
@@ -37,13 +41,28 @@ def get_tagged_sentences(train_data_file):
                 sentences.append(curr_sentence)
                 curr_sentence = []
             else:
-                word, tag = word_and_tag.strip("\n").split(" ")
-                words.add(word)
-                tags.add(tag)
+                word, tag = word_and_tag.strip("\n").strip().split(" ")
+                if not dev:
+                    words.add(word)
+                    tags.add(tag)
                 curr_sentence.append((word, tag))
-    #tags = sorted(tags)
-    #words = sorted(words)
-    return sentences, tags, words
+    if not dev:
+        words.add(unk)
+        tags.add(unk)
+    return sentences
+
+def get_not_tagged_sentences(test_data_file):
+    sentences = []
+    curr_sentence = []
+    with open(test_data_file, "r") as train_file:
+        for word_in_line in train_file.readlines():
+            if word_in_line == '\n':
+                sentences.append(curr_sentence)
+                curr_sentence = []
+            else:
+                word = word_in_line.strip("\n").strip()
+                curr_sentence.append(word)
+    return sentences
 
 
 
@@ -55,34 +74,84 @@ def make_window_of_words(sentences):
         buffed_sentence = [(start, start), (start, start)]
         buffed_sentence.extend(sentence)
         buffed_sentence.extend([(end, end), (end, end)])
-
         for i, (word,tag) in enumerate(buffed_sentence):
             if word == start or word == end:
                 continue
-            all_windows.append((word_to_index[buffed_sentence[i-2][0]],
-                                word_to_index[buffed_sentence[i-1][0]], word_to_index[buffed_sentence[i][0]],
-                                word_to_index[buffed_sentence[i+1][0]], word_to_index[buffed_sentence[i+2][0]]))
-            all_tags.append(buffed_sentence[i][1])
+            all_windows.append(get_indexes_of_windows_from_test(buffed_sentence[i-2][0], buffed_sentence[i-1][0],
+                                                                buffed_sentence[i][0], buffed_sentence[i+1][0],
+                                                                buffed_sentence[i+2][0]))
+            all_tags.append(tags_to_index[buffed_sentence[i][1]])
     return all_windows, all_tags
 
 
-def load_and_get_train_data(train_data_file):
-    tagged_sentences, tags ,words = get_tagged_sentences(train_data_file)
-    load_mapping_dicts(words, tags)
+
+
+def make_window_of_untagged_words(sentences):
+    global start, end
+    all_windows = []
+    for sentence in sentences:
+        buffed_sentence = [start, start]
+        buffed_sentence.extend(sentence)
+        buffed_sentence.extend([end, end])
+        for i, (word) in enumerate(buffed_sentence):
+            if word == start or word == end:
+                continue
+            all_windows.append(get_indexes_of_windows_from_test(buffed_sentence[i-2], buffed_sentence[i-1],
+                                                                buffed_sentence[i], buffed_sentence[i+1],
+                                                                buffed_sentence[i+2]))
+    return all_windows
+
+
+def get_indexes_of_windows_from_test(w1, w2, w3, w4, w5):
+    final_win = [get_word_index(w1), get_word_index(w2), get_word_index(w3), get_word_index(w4), get_word_index(w5)]
+    return final_win
+
+def get_word_index(word):
+    global unk, word_to_index
+    if word in word_to_index:
+        return word_to_index[word]
+    else:
+        return word_to_index[unk]
+
+def load_and_get_train_data(train_data_file, dev=False):
+    tagged_sentences = get_tagged_sentences(train_data_file, dev)
+    if not dev:
+        load_mapping_dicts()
     window_of_words,all_tags = make_window_of_words(tagged_sentences)
-    x= 5
+    return window_of_words, all_tags
 
 
-def load_mapping_dicts(sorted_words, sorted_tags):
-    global word_to_index, index_to_words, index_to_tags, tags_to_index
-    word_to_index = {word: i + 2 for i, word in enumerate(list(sorted_words))}
-    word_to_index[start] = 0
-    word_to_index[end] = 1
+
+
+
+def load_and_get_test_data(test_data_file):
+    sentences = get_not_tagged_sentences(test_data_file)
+    window_of_words = make_window_of_untagged_words(sentences)
+    return window_of_words
+
+def make_test_data_loader(file,batch_size=1):
+    windows = load_and_get_test_data(file)
+    windows = torch.from_numpy(np.array(windows))
+    windows = windows.type(torch.LongTensor)
+    test = torch.utils.data.TensorDataset(windows)
+    return torch.utils.data.DataLoader(test, batch_size, shuffle=True)
+
+def make_data_loader(file,dev=False, batch_size=1):
+    windows, tags_for_windows = load_and_get_train_data(file, dev)
+    windows, tags_for_windows = torch.from_numpy(np.array(windows)), torch.from_numpy(np.array(tags_for_windows))
+    windows, tags_for_windows = windows.type(torch.LongTensor), tags_for_windows.type(torch.LongTensor)
+    data = torch.utils.data.TensorDataset(windows,tags_for_windows)
+    return torch.utils.data.DataLoader(data, batch_size, shuffle=True)
+
+
+def load_mapping_dicts():
+    global word_to_index, index_to_words, index_to_tags, tags_to_index, start, end,words,tags
+    words.update({start, end})
+    word_to_index = {word: i for i, word in enumerate(words)}
     index_to_words = {i: word for word, i in word_to_index.iteritems()}
-    tags_to_index = {tag: i for i, tag in enumerate(list(sorted_tags))}
+    tags_to_index = {tag: i for i, tag in enumerate(tags)}
     index_to_tags = {i: tag for tag, i in tags_to_index.iteritems()}
 
 
-load_and_get_train_data("pos/train")
-word_embedding = get_word_embedding("wordVectors.txt", "vocab.txt")
+
 

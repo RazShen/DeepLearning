@@ -8,3 +8,11 @@ ass1/utils.pyc
 ass1/mlp1.pyc
 ass1/xor_data.pyc
 ass1/mlpn.pyc
+*.pyc
+venv/
+venv1/
+venv2/
+venv3/
+venv4/
+*.iml
+*.xml

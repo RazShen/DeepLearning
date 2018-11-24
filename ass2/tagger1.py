@@ -4,56 +4,61 @@ from torchvision import datasets, transforms
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
+import torch
 import numpy as np
+from torch.autograd import Variable
 import matplotlib.pyplot as plt
 from matplotlib.legend_handler import HandlerLine2D
 import utils_part1 as utils
 
 
-BATCH_SIZE = 40
-IMAGE_SIZE = 28 * 28
+BATCH_SIZE = 50
+INPUT_SIZE = 250
 LEARN_RATE = 0.01
 EPOCHS = 10
-FIRST_HIDDEN_LAYER_SIZE = 100
-SECOND_HIDDEN_LAYER_SIZE = 50
-OUTPUT_LAYER_SIZE = 10
+EMBEDDING_VEC = 50
+WINDOW = 5
 
 
 class ModelBuilder(object):
-
     def __init__(self):
         """
         The constructor initializes the datasets, model, optimizer and the dictionaries for the graph.
         """
-        train_dataset = datasets.FashionMNIST(root='./data', train=True, transform=transforms.ToTensor(), download=True)
-        train_dataset = utils
-        test_dataset = datasets.FashionMNIST(root='./data', train=False, transform=transforms.ToTensor())
 
-        # Define the indices
-        indices = list(range(len(train_dataset)))  # start with all the indices in training set
-        split = int(len(train_dataset) * 0.2)  # define the split size
+        self.train_loader = utils.make_data_loader("pos/train", batch_size=BATCH_SIZE)
+        self.dev_loader = utils.make_data_loader("pos/dev",dev=True)
+        self.test_loader = utils.make_test_data_loader("pos/test")
+        self.model = FirstNet(input_size=INPUT_SIZE)
+        self.optimizer = optim.Adagrad(self.model.parameters(), lr=LEARN_RATE)
+        #
+        # train_dataset = utils
+        # test_dataset = datasets.FashionMNIST(root='./data', train=False, transform=transforms.ToTensor())
+        #
+        # # Define the indices
+        # indices = list(range(len(train_dataset)))  # start with all the indices in training set
+        # split = int(len(train_dataset) * 0.2)  # define the split size
+        #
+        # # Random, non-contiguous split
+        # validation_idx = np.random.choice(indices, size=split, replace=False)
+        # train_idx = list(set(indices) - set(validation_idx))
+        #
+        # # define our samplers -- we use a SubsetRandomSampler because it will return
+        # # a random subset of the split defined by the given indices without replacement
+        # train_sampler = SubsetRandomSampler(train_idx)
+        # validation_sampler = SubsetRandomSampler(validation_idx)
+        #
+        # # define loaders
+        # self.train_loader = DataLoader(dataset=train_dataset, batch_size=BATCH_SIZE, sampler=train_sampler)
+        # self.validation_loader = DataLoader(dataset=train_dataset, batch_size=1, sampler=validation_sampler)
+        # self.test_loader = DataLoader(dataset=test_dataset, batch_size=1, shuffle=False)
+        #
+        # # initialize model
 
-        # Random, non-contiguous split
-        validation_idx = np.random.choice(indices, size=split, replace=False)
-        train_idx = list(set(indices) - set(validation_idx))
-
-        # define our samplers -- we use a SubsetRandomSampler because it will return
-        # a random subset of the split defined by the given indices without replacement
-        train_sampler = SubsetRandomSampler(train_idx)
-        validation_sampler = SubsetRandomSampler(validation_idx)
-
-        # define loaders
-        self.train_loader = DataLoader(dataset=train_dataset, batch_size=BATCH_SIZE, sampler=train_sampler)
-        self.validation_loader = DataLoader(dataset=train_dataset, batch_size=1, sampler=validation_sampler)
-        self.test_loader = DataLoader(dataset=test_dataset, batch_size=1, shuffle=False)
-
-        # initialize model
-        self.model = FirstNet(image_size=IMAGE_SIZE)
-
-        # initialize optimizer for the model
-        self.optimizer = optim.Adagrad(self.model.parameters())
-
-        # initialize the dictionaries for the plot
+        #
+        # # initialize optimizer for the model
+        #
+        # # initialize the dictionaries for the plot
         self.validation_print_dict = {}
         self.train_print_dict = {}
 
@@ -91,15 +96,15 @@ class ModelBuilder(object):
         self.model.eval()
         validation_loss = 0
         correct = 0
-        for data, target in self.validation_loader:
+        for data, target in self.dev_loader:
             output = self.model(data)
             validation_loss += F.nll_loss(output, target, size_average=False).item()
             pred = output.data.max(1, keepdim=True)[1]
             correct += pred.eq(target.data.view_as(pred)).cpu().sum().item()
-        validation_loss /= len(self.validation_loader)
+        validation_loss /= len(self.dev_loader)
         print('\n Validation epoch number :{} Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
-            epoch_num, validation_loss, correct, len(self.validation_loader),
-            100. * correct / len(self.validation_loader)))
+            epoch_num, validation_loss, correct, len(self.dev_loader),
+            100. * correct / len(self.dev_loader)))
         self.validation_print_dict[epoch_num] = validation_loss
 
     def test(self):
@@ -133,7 +138,7 @@ class ModelBuilder(object):
         self.model.train()
         correct = 0
         train_loss = 0
-        for batchidx, (data, labels) in enumerate(self.train_loader):
+        for data, labels in self.train_loader:
             self.optimizer.zero_grad()
             output = self.model(data)
             pred = output.data.max(1, keepdim=True)[1]
@@ -152,33 +157,38 @@ class ModelBuilder(object):
         self.train_print_dict[epoch] = train_loss
 
 
+
 class FirstNet(nn.Module):
     """
     Model A, Neural	Network	with two hidden	layers,	the first layer has	a size of 100 and the second layer has a size
     of 50, both are followed by	ReLU activation	function.
     """
-    def __init__(self, image_size):
+    def __init__(self, input_size):
         """
         Neural network inherits from nn.Module that has 2 hidden layers, W1,b1,W2,b2,W3,b3.
         :param image_size: size of image
         """
         super(FirstNet, self).__init__()
-        self.image_size = image_size
-        self.fc0 = nn.Linear(image_size, FIRST_HIDDEN_LAYER_SIZE)
-        self.fc1 = nn.Linear(FIRST_HIDDEN_LAYER_SIZE, SECOND_HIDDEN_LAYER_SIZE)
-        self.fc2 = nn.Linear(SECOND_HIDDEN_LAYER_SIZE, OUTPUT_LAYER_SIZE)
+        self.E = nn.Embedding(len(utils.words), EMBEDDING_VEC)
+        self.input_size = WINDOW * EMBEDDING_VEC
+        self.fc0 = nn.Linear(input_size, len(utils.tags))
+
 
     def forward(self, x):
         """
-        For example x, get a vector of probabilities using softmax and the 2 hidden layers.
+        For example x, get a vector of probabilities using softmax and the 1 hidden layer.
         :param x: example
         :return: vector of probabilities
         """
-        x = x.view(-1, self.image_size)
-        x = F.relu(self.fc0(x))
-        x = F.relu(self.fc1(x))
-        x = self.fc2(x)
+        #print(x)
+        #print("&&&&&&&&&&&&&&&&&&&&&&NEXT X + " + str(len(x)) + "\n &&&&&&&&&&&&&&&&")
+
+        x = self.E(x)
+        x = x.view(-1, self.input_size)
+        #print("&&&&&&&&&&&&&&&&&&&&&& after embedding      &&&&&&&&&&&&&&&&")
+        x = F.tanh(self.fc0(x))
         return F.log_softmax(x, dim=1)
+
 
 
 
