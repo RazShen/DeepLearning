@@ -2,11 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="7c011b3d-9a1b-4ce0-8e91-922eb51dfd70" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/DL_workspace.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/DL_workspace.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ass2/tagger1.py" beforeDir="false" afterPath="$PROJECT_DIR$/ass2/tagger1.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ass2/utils_part1.py" beforeDir="false" afterPath="$PROJECT_DIR$/ass2/utils_part1.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -52,23 +48,23 @@
       <usages-collector id="statistics.file.extensions.edit">
         <counts>
           <entry key="dummy" value="17" />
-          <entry key="py" value="5458" />
+          <entry key="py" value="5473" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.edit">
         <counts>
           <entry key="PLAIN_TEXT" value="17" />
-          <entry key="Python" value="5458" />
+          <entry key="Python" value="5473" />
         </counts>
       </usages-collector>
     </session>
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="375">
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/ass2/utils_part1.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="308">
+            <state relative-caret-position="-2720">
               <caret line="19" column="19" selection-start-line="19" selection-start-column="19" selection-end-line="19" selection-end-column="19" />
               <folding>
                 <element signature="e#0#26#0" expanded="true" />
@@ -80,14 +76,14 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/ass2/tagger1.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-1883">
-              <caret line="23" column="4" selection-start-line="23" selection-start-column="4" selection-end-line="23" selection-end-column="4" />
+            <state relative-caret-position="341">
+              <caret line="30" column="61" selection-start-line="30" selection-start-column="61" selection-end-line="30" selection-end-column="61" />
               <folding>
                 <element signature="e#2#50#0" expanded="true" />
-                <marker date="1543045790623" expanded="true" signature="7884:7886" ph="..." />
+                <marker date="1543069966755" expanded="true" signature="7899:7901" ph="..." />
               </folding>
             </state>
           </provider>
@@ -160,8 +156,8 @@
       <find>word_embedding</find>
       <find>train_validate_test</find>
       <find>tags</find>
-      <find>words</find>
       <find>train_loader</find>
+      <find>words</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -173,8 +169,8 @@
         <option value="$PROJECT_DIR$/ass1/data/loglinear_pytorch.py" />
         <option value="$PROJECT_DIR$/ass1/loglinear_pytorch.py" />
         <option value="$PROJECT_DIR$/ass2/utils.py" />
-        <option value="$PROJECT_DIR$/ass2/tagger1.py" />
         <option value="$PROJECT_DIR$/ass2/utils_part1.py" />
+        <option value="$PROJECT_DIR$/ass2/tagger1.py" />
       </list>
     </option>
   </component>
@@ -653,26 +649,26 @@
     <entry file="file://$PROJECT_DIR$/ass2/data/pos/dev">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
-    <entry file="file://$PROJECT_DIR$/ass2/tagger1.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-1883">
-          <caret line="23" column="4" selection-start-line="23" selection-start-column="4" selection-end-line="23" selection-end-column="4" />
-          <folding>
-            <element signature="e#2#50#0" expanded="true" />
-            <marker date="1543045790623" expanded="true" signature="7884:7886" ph="..." />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/ass2/utils_part1.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="308">
+        <state relative-caret-position="-2720">
           <caret line="19" column="19" selection-start-line="19" selection-start-column="19" selection-end-line="19" selection-end-column="19" />
           <folding>
             <element signature="e#0#26#0" expanded="true" />
             <marker date="1543052665146" expanded="true" signature="2812:2814" ph="..." />
             <marker date="1543052665146" expanded="true" signature="4148:4151" ph="..." />
             <marker date="1543052665146" expanded="true" signature="4388:4650" ph="..." />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ass2/tagger1.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="341">
+          <caret line="30" column="61" selection-start-line="30" selection-start-column="61" selection-end-line="30" selection-end-column="61" />
+          <folding>
+            <element signature="e#2#50#0" expanded="true" />
+            <marker date="1543069966755" expanded="true" signature="7899:7901" ph="..." />
           </folding>
         </state>
       </provider>

@@ -26,9 +26,9 @@ class ModelBuilder(object):
         The constructor initializes the datasets, model, optimizer and the dictionaries for the graph.
         """
 
-        self.train_loader = utils.make_data_loader("pos/train", batch_size=BATCH_SIZE)
-        self.dev_loader = utils.make_data_loader("pos/dev",dev=True)
-        self.test_loader = utils.make_test_data_loader("pos/test")
+        self.train_loader = utils.make_data_loader("data/pos/train", batch_size=BATCH_SIZE)
+        self.dev_loader = utils.make_data_loader("data/pos/dev",dev=True)
+        self.test_loader = utils.make_test_data_loader("data/pos/test")
         self.model = FirstNet(input_size=INPUT_SIZE)
         self.optimizer = optim.Adagrad(self.model.parameters(), lr=LEARN_RATE)
         #
