@@ -1,18 +1,14 @@
-from torch.utils.data import Dataset, DataLoader
-from torch.utils.data.sampler import SubsetRandomSampler
-from torchvision import datasets, transforms
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 import torch
-import numpy as np
-from torch.autograd import Variable
 import matplotlib.pyplot as plt
 from matplotlib.legend_handler import HandlerLine2D
 import utils_part1 as utils
+import sys
 
 
-BATCH_SIZE = 50
+BATCH_SIZE = 1000
 INPUT_SIZE = 250
 LEARN_RATE = 0.01
 EPOCHS = 10
@@ -25,42 +21,29 @@ class ModelBuilder(object):
         """
         The constructor initializes the datasets, model, optimizer and the dictionaries for the graph.
         """
+        self.is_pos = False
+        self.test_file = "ner/test"
+        self.train_file = "ner/train"
+        self.dev_file = "ner/dev"
+        if len(sys.argv) == 0:
+            print ("Usage tagger1.py pos/ner")
+            exit()
+        if sys.argv[1] == "pos":
+            self.test_file = "pos/test"
+            self.train_file = "pos/train"
+            self.dev_file = "pos/dev"
+            self.is_pos = True
 
-        self.train_loader = utils.make_data_loader("data/pos/train", batch_size=BATCH_SIZE)
-        self.dev_loader = utils.make_data_loader("data/pos/dev",dev=True)
-        self.test_loader = utils.make_test_data_loader("data/pos/test")
+        self.train_loader = utils.make_data_loader(self.train_file, batch_size=BATCH_SIZE)
+        self.dev_loader = utils.make_data_loader(self.dev_file,dev=True)
+        self.test_loader = utils.make_test_data_loader(self.test_file)
         self.model = FirstNet(input_size=INPUT_SIZE)
-        self.optimizer = optim.Adagrad(self.model.parameters(), lr=LEARN_RATE)
-        #
-        # train_dataset = utils
-        # test_dataset = datasets.FashionMNIST(root='./data', train=False, transform=transforms.ToTensor())
-        #
-        # # Define the indices
-        # indices = list(range(len(train_dataset)))  # start with all the indices in training set
-        # split = int(len(train_dataset) * 0.2)  # define the split size
-        #
-        # # Random, non-contiguous split
-        # validation_idx = np.random.choice(indices, size=split, replace=False)
-        # train_idx = list(set(indices) - set(validation_idx))
-        #
-        # # define our samplers -- we use a SubsetRandomSampler because it will return
-        # # a random subset of the split defined by the given indices without replacement
-        # train_sampler = SubsetRandomSampler(train_idx)
-        # validation_sampler = SubsetRandomSampler(validation_idx)
-        #
-        # # define loaders
-        # self.train_loader = DataLoader(dataset=train_dataset, batch_size=BATCH_SIZE, sampler=train_sampler)
-        # self.validation_loader = DataLoader(dataset=train_dataset, batch_size=1, sampler=validation_sampler)
-        # self.test_loader = DataLoader(dataset=test_dataset, batch_size=1, shuffle=False)
-        #
-        # # initialize model
+        self.optimizer = optim.Adam(self.model.parameters(), lr=LEARN_RATE)
 
-        #
-        # # initialize optimizer for the model
-        #
-        # # initialize the dictionaries for the plot
-        self.validation_print_dict = {}
-        self.train_print_dict = {}
+        self.validation_loss_print_dict = {}
+        self.validation_acc_print_dict = {}
+
+
 
     def train_validate_test(self):
         """
@@ -72,18 +55,29 @@ class ModelBuilder(object):
             self.train(epoch)
             self.validation(epoch)
         self.test()
-        self.print_results()
+        self.print_results_loss()
+        self.print_results_acc()
 
-    def print_results(self):
+
+    def print_results_loss(self):
         """
         This method draws the graph by using the validation and train epoch-loss dictionaries
         :return:
         """
-        norm_line, = plt.plot(self.validation_print_dict.keys(), self.validation_print_dict.values(), "red",
+        norm_line, = plt.plot(self.validation_loss_print_dict.keys(), self.validation_loss_print_dict.values(), "red",
                               label='Validation loss')
-        trained_line, = plt.plot(self.train_print_dict.keys(), self.train_print_dict.values(), "black",
-                                 label='Train loss')
         plt.legend(handler_map={norm_line: HandlerLine2D()})
+        plt.show()
+
+    def print_results_acc(self):
+        """
+        This method draws the graph by using the validation and train epoch-loss dictionaries
+        :return:
+        """
+        trained_line, = plt.plot(self.validation_acc_print_dict.keys(), self.validation_acc_print_dict.values(),
+                                 "black",
+                                 label='Validation accuracy')
+        plt.legend(handler_map={trained_line: HandlerLine2D()})
         plt.show()
 
     def validation(self, epoch_num):
@@ -96,16 +90,26 @@ class ModelBuilder(object):
         self.model.eval()
         validation_loss = 0
         correct = 0
+        sum_examples = 0
+        if self.is_pos:
+            sum_examples = len(self.dev_loader)
         for data, target in self.dev_loader:
             output = self.model(data)
             validation_loss += F.nll_loss(output, target, size_average=False).item()
             pred = output.data.max(1, keepdim=True)[1]
-            correct += pred.eq(target.data.view_as(pred)).cpu().sum().item()
+            if self.is_pos:
+                correct += pred.eq(target.data.view_as(pred)).cpu().sum().item()
+            else:
+                if utils.index_to_tags[target.cpu().sum().item()] == "O" and utils.index_to_tags[pred.cpu().sum().item()] == "O":
+                    continue
+                sum_examples += 1
+                correct += pred.eq(target.data.view_as(pred)).cpu().sum().item()
         validation_loss /= len(self.dev_loader)
         print('\n Validation epoch number :{} Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
-            epoch_num, validation_loss, correct, len(self.dev_loader),
-            100. * correct / len(self.dev_loader)))
-        self.validation_print_dict[epoch_num] = validation_loss
+            epoch_num, validation_loss, correct, sum_examples,
+            100. * correct / sum_examples))
+        self.validation_loss_print_dict[epoch_num] = validation_loss
+        self.validation_acc_print_dict[epoch_num] = float(100.0 * correct/sum_examples)
 
     def test(self):
         """
@@ -114,19 +118,29 @@ class ModelBuilder(object):
         :return:
         """
         self.model.eval()
-        test_loss = 0
-        correct = 0
-        prediction_file = open("test.pred", 'w')
-        for data, target in self.test_loader:
-            output = self.model(data)
-            test_loss += F.nll_loss(output, target, size_average=False).item()
+        preds = []
+        for data in self.test_loader:
+            output = self.model(torch.LongTensor(data))
             pred = output.data.max(1, keepdim=True)[1]
-            prediction_file.write(str(pred.item()) + "\n")
-            correct += pred.eq(target.data.view_as(pred)).cpu().sum().item()
-        test_loss /= len(self.test_loader)
-        print('\n Test Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
-            test_loss, correct, len(self.test_loader), 100. * correct / len(self.test_loader)))
+            preds.append(pred.cpu().sum().item())
+        self.write_test_file(preds)
+
+    def write_test_file(self, list_tags):
+        if self.is_pos:
+            prediction_file = open("test1.pos", 'w')
+        else:
+            prediction_file = open("test1.ner", 'w')
+        with open(self.test_file, "r") as original_test:
+            i = 0
+            for line in original_test.readlines():
+                if line == "\n":
+                    prediction_file.writelines("\n")
+                    continue
+                prediction_file.writelines(line.strip() + " " + str(utils.index_to_tags[list_tags[i]]) + "\n")
+                i += 1
+
         prediction_file.close()
+
 
     def train(self, epoch):
         """
@@ -138,6 +152,7 @@ class ModelBuilder(object):
         self.model.train()
         correct = 0
         train_loss = 0
+        total_examples = len(self.train_loader)
         for data, labels in self.train_loader:
             self.optimizer.zero_grad()
             output = self.model(data)
@@ -152,9 +167,8 @@ class ModelBuilder(object):
             self.optimizer.step()
         train_loss /= len(self.train_loader)
         print('\n Train epoch number: {}, Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
-            epoch, train_loss, correct, len(self.train_loader) * BATCH_SIZE,
-                                        (100. * correct) / (len(self.train_loader) * BATCH_SIZE)))
-        self.train_print_dict[epoch] = train_loss
+            epoch, train_loss, correct, total_examples * BATCH_SIZE,
+                                        (100. * correct) / (total_examples * BATCH_SIZE)))
 
 
 
@@ -180,12 +194,9 @@ class FirstNet(nn.Module):
         :param x: example
         :return: vector of probabilities
         """
-        #print(x)
-        #print("&&&&&&&&&&&&&&&&&&&&&&NEXT X + " + str(len(x)) + "\n &&&&&&&&&&&&&&&&")
 
         x = self.E(x)
         x = x.view(-1, self.input_size)
-        #print("&&&&&&&&&&&&&&&&&&&&&& after embedding      &&&&&&&&&&&&&&&&")
         x = F.tanh(self.fc0(x))
         return F.log_softmax(x, dim=1)
 
