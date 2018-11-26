@@ -2,8 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="7c011b3d-9a1b-4ce0-8e91-922eb51dfd70" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ass2/data/test1.pos" beforeDir="false" afterPath="$PROJECT_DIR$/ass2/data/test1.pos" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ass2/tagger1.py" beforeDir="false" afterPath="$PROJECT_DIR$/ass2/tagger1.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ass2/top_k.py" beforeDir="false" afterPath="$PROJECT_DIR$/ass2/top_k.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ass2/utils_part1.py" beforeDir="false" afterPath="$PROJECT_DIR$/ass2/utils_part1.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -14,8 +15,9 @@
   </component>
   <component name="CoverageDataManager">
     <SUITE FILE_PATH="coverage/DL_workspace$tagger1.coverage" NAME="tagger1 Coverage Results" MODIFIED="1543136750419" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/ass2/data" />
-    <SUITE FILE_PATH="coverage/DL_workspace$top_k.coverage" NAME="top k Coverage Results" MODIFIED="1543140062193" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/ass2/data" />
-    <SUITE FILE_PATH="coverage/DL_workspace$Unnamed.coverage" NAME="Unnamed Coverage Results" MODIFIED="1542970365708" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/ass2/data" />
+    <SUITE FILE_PATH="coverage/DL_workspace$tagger2.coverage" NAME="tagger2 Coverage Results" MODIFIED="1543159449247" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/ass2/data" />
+    <SUITE FILE_PATH="coverage/DL_workspace$top_k.coverage" NAME="top k Coverage Results" MODIFIED="1543268566257" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/ass2/data" />
+    <SUITE FILE_PATH="coverage/DL_workspace$Unnamed.coverage" NAME="tagger 3 Coverage Results" MODIFIED="1543267674623" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/ass2/data" />
   </component>
   <component name="FUSProjectUsageTrigger">
     <session id="323030548">
@@ -34,34 +36,34 @@
         <counts>
           <entry key="dev" value="6" />
           <entry key="gitignore" value="1" />
-          <entry key="ner" value="1" />
+          <entry key="ner" value="2" />
           <entry key="pos" value="1" />
           <entry key="pstat" value="1" />
-          <entry key="py" value="40" />
+          <entry key="py" value="47" />
           <entry key="test" value="4" />
           <entry key="train" value="4" />
-          <entry key="txt" value="8" />
+          <entry key="txt" value="10" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.open">
         <counts>
-          <entry key="PLAIN_TEXT" value="25" />
+          <entry key="PLAIN_TEXT" value="28" />
           <entry key="Profiler Session" value="1" />
-          <entry key="Python" value="40" />
+          <entry key="Python" value="47" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.extensions.edit">
         <counts>
           <entry key="Python Console" value="18" />
           <entry key="dummy" value="17" />
-          <entry key="py" value="8186" />
+          <entry key="py" value="12375" />
           <entry key="train" value="1" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.edit">
         <counts>
           <entry key="PLAIN_TEXT" value="18" />
-          <entry key="Python" value="8204" />
+          <entry key="Python" value="12393" />
         </counts>
       </usages-collector>
     </session>
@@ -71,12 +73,34 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/ass2/utils_part1.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-37">
-              <caret line="24" selection-start-line="24" selection-end-line="24" />
+            <state relative-caret-position="229">
+              <caret line="158" column="13" lean-forward="true" selection-start-line="158" selection-start-column="13" selection-end-line="158" selection-end-column="13" />
               <folding>
                 <element signature="e#0#26#0" expanded="true" />
-                <marker date="1543137932462" expanded="true" signature="4239:4503" ph="..." />
+                <marker date="1543249798449" expanded="true" signature="4707:4971" ph="..." />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/ass2/utils_part2.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="133">
+              <caret line="120" column="4" selection-start-line="120" selection-start-column="4" selection-end-line="120" selection-end-column="4" />
+              <folding>
+                <element signature="e#0#26#0" expanded="true" />
+                <marker date="1543159449237" expanded="true" signature="4107:4145" ph="..." />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/ass2/data/vocab.txt">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="-1792442">
+              <caret line="18744" column="7" selection-start-line="18744" selection-start-column="2" selection-end-line="18744" selection-end-column="7" />
             </state>
           </provider>
         </entry>
@@ -84,33 +108,65 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/ass2/top_k.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="330">
-              <caret line="15" lean-forward="true" selection-start-line="15" selection-end-line="15" />
+            <state relative-caret-position="264">
+              <caret line="12" column="7" lean-forward="true" selection-start-line="12" selection-start-column="7" selection-end-line="12" selection-end-column="7" />
               <folding>
                 <element signature="e#0#27#0" expanded="true" />
-                <marker date="1543140062183" expanded="true" signature="247:248" ph="..." />
-                <marker date="1543140062183" expanded="true" signature="247:326" ph="..." />
-                <marker date="1543140062183" expanded="true" signature="247:327" ph="..." />
-                <marker date="1543140062183" expanded="true" signature="458:462" ph="..." />
+                <marker date="1543268810275" expanded="true" signature="1169:1174" ph="..." />
+                <marker date="1543268810275" expanded="true" signature="1169:1188" ph="..." />
+                <marker date="1543268810275" expanded="true" signature="1452:1456" ph="..." />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$USER_HOME$/anaconda2/lib/python2.7/site-packages/numpy/core/fromnumeric.py">
+        <entry file="file://$PROJECT_DIR$/ass2/tagger2.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="171">
-              <caret line="2221" column="4" selection-start-line="2221" selection-start-column="4" selection-end-line="2221" selection-end-column="4" />
+            <state relative-caret-position="470">
+              <caret line="197" column="28" selection-start-line="197" selection-start-column="28" selection-end-line="197" selection-end-column="28" />
+              <folding>
+                <element signature="e#0#21#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/ass2/data/test1.ner">
+        <entry file="file://$PROJECT_DIR$/ass2/tagger3.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-491">
-              <caret line="10" column="4" lean-forward="true" selection-start-line="10" selection-start-column="4" selection-end-line="10" selection-end-column="4" />
+            <state relative-caret-position="462">
+              <caret line="208" column="65" selection-start-line="208" selection-start-column="65" selection-end-line="208" selection-end-column="65" />
+              <folding>
+                <element signature="e#0#21#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$USER_HOME$/anaconda2/lib/python2.7/site-packages/torch/nn/functional.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="-76">
+              <caret line="1109" selection-start-line="1109" selection-end-line="1109" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$USER_HOME$/anaconda2/lib/python2.7/site-packages/torch/nn/modules/sparse.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="171">
+              <caret line="109" selection-start-line="109" selection-end-line="109" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$USER_HOME$/anaconda2/lib/python2.7/site-packages/torch/nn/modules/module.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="154">
+              <caret line="476" selection-start-line="476" selection-end-line="476" />
             </state>
           </provider>
         </entry>
@@ -118,55 +174,14 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/ass2/tagger1.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-3922">
-              <caret line="10" column="14" selection-start-line="10" selection-start-column="14" selection-end-line="10" selection-end-column="14" />
+            <state relative-caret-position="308">
+              <caret line="14" column="10" lean-forward="true" selection-start-line="14" selection-end-line="15" />
               <folding>
                 <element signature="e#0#21#0" expanded="true" />
-                <marker date="1543136748291" expanded="true" signature="4781:5340" ph="..." />
-                <marker date="1543136748291" expanded="true" signature="5363:5372" ph="..." />
-                <marker date="1543136748291" expanded="true" signature="7571:7573" ph="..." />
+                <marker date="1543239705518" expanded="true" signature="4838:5397" ph="..." />
+                <marker date="1543239705518" expanded="true" signature="5420:5429" ph="..." />
+                <marker date="1543239705518" expanded="true" signature="7475:7477" ph="..." />
               </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/ass2/data/pos/dev">
-          <provider selected="true" editor-type-id="text-editor" />
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/ass2/data/test1.pos">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="919842">
-              <caret line="41811" column="6" lean-forward="true" selection-start-line="41811" selection-start-column="6" selection-end-line="41811" selection-end-column="6" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/ass2/data/pos/test">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-5177">
-              <caret line="41569" column="3" lean-forward="true" selection-start-line="41569" selection-start-column="3" selection-end-line="41569" selection-end-column="3" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/ass2/data/ner/train">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="44">
-              <caret line="2" column="4" selection-start-line="2" selection-start-column="4" selection-end-line="2" selection-end-column="4" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/ass2/data/pos/train">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="660">
-              <caret line="30" column="3" selection-start-line="30" selection-start-column="3" selection-end-line="30" selection-end-column="3" />
             </state>
           </provider>
         </entry>
@@ -197,12 +212,19 @@
       <find>word_embedding</find>
       <find>train_validate_test</find>
       <find>tags</find>
-      <find>words</find>
       <find>train_loader</find>
       <find>print_dict</find>
       <find>unk</find>
-      <find>print_result</find>
+      <find>get_word_index</find>
+      <find>get_indexes_of_windows_from_test</find>
+      <find>make_window_of_words</find>
+      <find>word_to_index</find>
+      <find>words</find>
       <find>Tensor</find>
+      <find>start</find>
+      <find>make_data_loader</find>
+      <find>lower()</find>
+      <find>print_result</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -215,8 +237,13 @@
         <option value="$PROJECT_DIR$/ass1/loglinear_pytorch.py" />
         <option value="$PROJECT_DIR$/ass2/utils.py" />
         <option value="$PROJECT_DIR$/ass2/data/ner/train" />
+        <option value="$PROJECT_DIR$/ass2/data/tagger2.py" />
+        <option value="$PROJECT_DIR$/ass2/data/utils_part2.py" />
+        <option value="$PROJECT_DIR$/ass2/utils_part2.py" />
         <option value="$PROJECT_DIR$/ass2/tagger1.py" />
         <option value="$PROJECT_DIR$/ass2/utils_part1.py" />
+        <option value="$PROJECT_DIR$/ass2/tagger2.py" />
+        <option value="$PROJECT_DIR$/ass2/tagger3.py" />
         <option value="$PROJECT_DIR$/ass2/top_k.py" />
       </list>
     </option>
@@ -228,10 +255,10 @@
     <sorting>DEFINITION_ORDER</sorting>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="28" />
+    <option name="x" value="9" />
     <option name="y" value="22" />
     <option name="width" value="1668" />
-    <option name="height" value="966" />
+    <option name="height" value="954" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="true">
     <ConfirmationsSetting value="1" id="Add" />
@@ -259,6 +286,11 @@
               <item name="ass2" type="462c0819:PsiDirectoryNode" />
               <item name="data" type="462c0819:PsiDirectoryNode" />
             </path>
+            <path>
+              <item name="DL_workspace" type="b2602c69:ProjectViewProjectNode" />
+              <item name="DL_workspace" type="462c0819:PsiDirectoryNode" />
+              <item name="venv" type="462c0819:PsiDirectoryNode" />
+            </path>
           </expand>
           <select />
         </subPane>
@@ -274,6 +306,7 @@
   </component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/ass2" />
       <recent name="$PROJECT_DIR$/ass2/data" />
       <recent name="$PROJECT_DIR$/ass1" />
     </key>
@@ -291,21 +324,21 @@
     </option>
   </component>
   <component name="RunManager" selected="Python.top k">
-    <configuration name="Unnamed" type="PythonConfigurationType" factoryName="Python">
+    <configuration name="tagger 3" type="PythonConfigurationType" factoryName="Python">
       <module name="DL_workspace" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <envs>
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
-      <option name="SDK_HOME" value="/usr/local/bin/python2.7" />
+      <option name="SDK_HOME" value="" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/ass2/data" />
-      <option name="IS_MODULE_SDK" value="false" />
+      <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/ass2/utils_part1.py" />
-      <option name="PARAMETERS" value="" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/ass2/tagger3.py" />
+      <option name="PARAMETERS" value="ner t" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
       <option name="MODULE_MODE" value="false" />
@@ -328,6 +361,28 @@
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/ass2/tagger1.py" />
       <option name="PARAMETERS" value="pos" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="tagger2" type="PythonConfigurationType" factoryName="Python">
+      <module name="DL_workspace" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="$USER_HOME$/anaconda2/bin/python" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/ass2/data" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/ass2/tagger2.py" />
+      <option name="PARAMETERS" value="ner" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
       <option name="MODULE_MODE" value="false" />
@@ -358,7 +413,8 @@
       <method v="2" />
     </configuration>
     <list>
-      <item itemvalue="Python.Unnamed" />
+      <item itemvalue="Python.tagger 3" />
+      <item itemvalue="Python.tagger2" />
       <item itemvalue="Python.top k" />
       <item itemvalue="Python.tagger1" />
     </list>
@@ -382,56 +438,56 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="28" y="22" width="1668" height="966" extended-state="0" />
+    <frame x="9" y="22" width="1668" height="954" extended-state="0" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.21782178" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.18131188" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" weight="0.32868758" />
-      <window_info anchor="bottom" id="Run" order="2" weight="0.36374268" />
-      <window_info active="true" anchor="bottom" id="Debug" order="3" visible="true" weight="0.33333334" />
+      <window_info active="true" anchor="bottom" id="Run" order="2" sideWeight="0.6243812" visible="true" weight="0.38671413" />
+      <window_info anchor="bottom" id="Debug" order="3" sideWeight="0.49876237" weight="0.41518387" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" />
       <window_info anchor="bottom" id="Docker" order="7" show_stripe_button="false" />
       <window_info anchor="bottom" id="Version Control" order="8" show_stripe_button="false" />
       <window_info anchor="bottom" id="Database Changes" order="9" show_stripe_button="false" />
-      <window_info anchor="bottom" id="Event Log" order="10" side_tool="true" />
+      <window_info anchor="bottom" id="Event Log" order="10" sideWeight="0.37561882" side_tool="true" weight="0.21052632" />
       <window_info anchor="bottom" id="Terminal" order="11" weight="0.31704545" />
       <window_info anchor="bottom" id="Python Console" order="12" weight="0.32954547" />
-      <window_info anchor="bottom" id="Concurrent Activities Diagram" order="13" weight="0.04886364" />
+      <window_info anchor="bottom" id="Concurrent Activities Diagram" order="13" sideWeight="0.49938118" weight="0.04795322" />
       <window_info anchor="right" id="Coverage" side_tool="true" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
-      <window_info anchor="right" id="SciView" order="3" visible="true" weight="0.017945545" />
+      <window_info anchor="right" id="SciView" order="3" weight="0.13056931" />
       <window_info anchor="right" id="Database" order="4" />
     </layout>
     <layout-to-restore>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.18843684" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.21782178" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
-      <window_info anchor="bottom" id="Find" order="1" weight="0.32954547" />
-      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.4568182" />
-      <window_info anchor="bottom" id="Debug" order="3" weight="0.39886364" />
+      <window_info anchor="bottom" id="Find" order="1" weight="0.32868758" />
+      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.6243812" visible="true" weight="0.21052632" />
+      <window_info anchor="bottom" id="Debug" order="3" sideWeight="0.49876237" weight="0.41520467" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" />
       <window_info anchor="bottom" id="Docker" order="7" show_stripe_button="false" />
       <window_info anchor="bottom" id="Version Control" order="8" show_stripe_button="false" />
       <window_info anchor="bottom" id="Database Changes" order="9" show_stripe_button="false" />
-      <window_info anchor="bottom" id="Event Log" order="10" side_tool="true" />
+      <window_info anchor="bottom" id="Event Log" order="10" sideWeight="0.37561882" side_tool="true" visible="true" weight="0.21052632" />
       <window_info anchor="bottom" id="Terminal" order="11" weight="0.31704545" />
       <window_info anchor="bottom" id="Python Console" order="12" weight="0.32954547" />
-      <window_info anchor="bottom" id="Concurrent Activities Diagram" order="13" weight="0.04886364" />
+      <window_info anchor="bottom" id="Concurrent Activities Diagram" order="13" sideWeight="0.49938118" weight="0.04795322" />
       <window_info anchor="right" id="Coverage" order="0" side_tool="true" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="1" type="SLIDING" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="2" weight="0.25" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="3" weight="0.25" />
-      <window_info anchor="right" id="SciView" order="4" weight="0.32985258" />
+      <window_info anchor="right" id="SciView" order="4" visible="true" weight="0.32549506" />
       <window_info anchor="right" id="Database" order="5" />
     </layout-to-restore>
   </component>
@@ -461,7 +517,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/ass2/utils_part1.py</url>
-          <line>133</line>
+          <line>155</line>
           <option name="timeStamp" value="50" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -481,13 +537,33 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/ass2/top_k.py</url>
-          <line>14</line>
-          <option name="timeStamp" value="64" />
+          <line>22</line>
+          <option name="timeStamp" value="70" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/ass2/top_k.py</url>
-          <line>12</line>
-          <option name="timeStamp" value="66" />
+          <url>file://$PROJECT_DIR$/ass2/tagger3.py</url>
+          <line>235</line>
+          <option name="timeStamp" value="74" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/ass2/tagger3.py</url>
+          <line>239</line>
+          <option name="timeStamp" value="77" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/ass2/tagger3.py</url>
+          <line>203</line>
+          <option name="timeStamp" value="78" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/ass2/tagger3.py</url>
+          <line>205</line>
+          <option name="timeStamp" value="79" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/ass2/tagger3.py</url>
+          <line>206</line>
+          <option name="timeStamp" value="80" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
@@ -508,58 +584,71 @@
         <watch expression="LA.norm(u,2)" language="Python" />
         <watch expression="LA.norm(v,2)" language="Python" />
         <watch expression="numerator" language="Python" />
+        <watch expression="self.prefixes[self.prefix_to_index[utils.index_to_words[11908][:3]]]" language="Python" />
+        <watch expression="self.e_matrix.shape[1]" language="Python" />
+        <watch expression="len(utils.tags)" language="Python" />
+        <watch expression="index" language="Python" />
+        <watch expression="prefix_vec_window[0]" language="Python" />
+        <watch expression="prefix_vec_window" language="Python" />
+        <watch expression="self.e_prefix" language="Python" />
+        <watch expression="x" language="Python" />
+        <watch expression="index" language="Python" />
+        <watch expression="self.E(x)" language="Python" />
+        <watch expression="self.E(x)" language="Python" />
+        <watch expression="embedding_mat_file" language="Python" />
+        <watch expression="prefix_vec_window.type(torch.LongTensor)" language="Python" />
       </configuration>
     </watches-manager>
   </component>
   <component name="debuggerHistoryManager">
     <expressions id="watch">
       <expression>
-        <expression-string>numerator</expression-string>
+        <expression-string>prefix_vec_window.type(torch.LongTensor)</expression-string>
         <language-id>Python</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>LA.norm(v,2)</expression-string>
+        <expression-string>self.E(x)</expression-string>
         <language-id>Python</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>LA.norm(u,2)</expression-string>
+        <expression-string>len(utils.tags)</expression-string>
         <language-id>Python</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>self.validation_acc_print_dict</expression-string>
+        <expression-string>self.e_matrix.shape[1]</expression-string>
         <language-id>Python</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>pred.cpu().sum().item()</expression-string>
+        <expression-string>embedding_mat_file</expression-string>
         <language-id>Python</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>torch.utils.data.DataLoader(test, batch_size)</expression-string>
+        <expression-string>E(x)</expression-string>
         <language-id>Python</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>data[0].data.cpu().numpy()[0]</expression-string>
+        <expression-string>self.prefixes[self.prefix_to_index[utils.index_to_words[11908][:3]]]</expression-string>
         <language-id>Python</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>data.data.cpu().numpy()</expression-string>
+        <expression-string>self.prefixes[utils.index_to_words[11908][:3]]</expression-string>
         <language-id>Python</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>data.data.cpu()</expression-string>
+        <expression-string>utils.index_to_words[11908][:3]</expression-string>
         <language-id>Python</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>data[0].data.cpu()</expression-string>
+        <expression-string>utils.index_to_words[index][:3]</expression-string>
         <language-id>Python</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
@@ -631,24 +720,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/ass2/data/wordVectors.txt">
-      <provider selected="true" editor-type-id="LargeFileEditor">
-        <state>
-          <caret column="300" selection-end-column="300" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$USER_HOME$/anaconda2/lib/python2.7/site-packages/torch/nn/modules/linear.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="288">
           <caret line="45" selection-start-line="45" selection-end-line="45" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$USER_HOME$/anaconda2/lib/python2.7/site-packages/torch/nn/modules/sparse.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="171">
-          <caret line="109" selection-start-line="109" selection-end-line="109" />
         </state>
       </provider>
     </entry>
@@ -673,13 +748,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/ass2/data/vocab.txt">
-      <provider selected="true" editor-type-id="text-editor">
-        <state>
-          <caret column="7" selection-end-column="7" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/ass2/data/ner/dev">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
@@ -700,31 +768,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$USER_HOME$/anaconda2/lib/python2.7/site-packages/torch/nn/functional.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="6891">
-          <caret line="1109" selection-start-line="1109" selection-end-line="1109" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$APPLICATION_HOME_DIR$/helpers/pydev/pydevd.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-16">
           <caret line="1063" column="13" selection-start-line="1063" selection-start-column="13" selection-end-line="1063" selection-end-column="13" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$USER_HOME$/anaconda2/lib/python2.7/site-packages/torch/nn/modules/module.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="147">
-          <caret line="496" selection-start-line="496" selection-end-line="496" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/ass2/data/pos/train">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="660">
-          <caret line="30" column="3" selection-start-line="30" selection-start-column="3" selection-end-line="30" selection-end-column="3" />
         </state>
       </provider>
     </entry>
@@ -752,26 +799,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/ass2/tagger1.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-3922">
-          <caret line="10" column="14" selection-start-line="10" selection-start-column="14" selection-end-line="10" selection-end-column="14" />
-          <folding>
-            <element signature="e#0#21#0" expanded="true" />
-            <marker date="1543136748291" expanded="true" signature="4781:5340" ph="..." />
-            <marker date="1543136748291" expanded="true" signature="5363:5372" ph="..." />
-            <marker date="1543136748291" expanded="true" signature="7571:7573" ph="..." />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/ass2/data/ner/train">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="44">
-          <caret line="2" column="4" selection-start-line="2" selection-start-column="4" selection-end-line="2" selection-end-column="4" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$USER_HOME$/anaconda2/lib/python2.7/site-packages/numpy/core/fromnumeric.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="171">
@@ -779,27 +806,125 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/ass2/data/pos/train">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="82">
+          <caret line="84" column="8" lean-forward="true" selection-start-line="84" selection-start-column="8" selection-end-line="84" selection-end-column="8" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ass2/data/wordVectors.txt">
+      <provider selected="true" editor-type-id="LargeFileEditor">
+        <state>
+          <caret column="300" selection-end-column="300" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ass2/data/test3.ner">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ass2/data/ner/train">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="132">
+          <caret line="6" column="2" selection-start-line="6" selection-end-line="6" selection-end-column="2" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ass2/__init__.py">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ass2/data/vocab.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-1792442">
+          <caret line="18744" column="7" selection-start-line="18744" selection-start-column="2" selection-end-line="18744" selection-end-column="7" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/ass2/utils_part1.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-37">
-          <caret line="24" selection-start-line="24" selection-end-line="24" />
+        <state relative-caret-position="229">
+          <caret line="158" column="13" lean-forward="true" selection-start-line="158" selection-start-column="13" selection-end-line="158" selection-end-column="13" />
           <folding>
             <element signature="e#0#26#0" expanded="true" />
-            <marker date="1543137932462" expanded="true" signature="4239:4503" ph="..." />
+            <marker date="1543249798449" expanded="true" signature="4707:4971" ph="..." />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ass2/utils_part2.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="133">
+          <caret line="120" column="4" selection-start-line="120" selection-start-column="4" selection-end-line="120" selection-end-column="4" />
+          <folding>
+            <element signature="e#0#26#0" expanded="true" />
+            <marker date="1543159449237" expanded="true" signature="4107:4145" ph="..." />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/anaconda2/lib/python2.7/site-packages/torch/nn/modules/sparse.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="171">
+          <caret line="109" selection-start-line="109" selection-end-line="109" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/anaconda2/lib/python2.7/site-packages/torch/nn/modules/module.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="154">
+          <caret line="476" selection-start-line="476" selection-end-line="476" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/anaconda2/lib/python2.7/site-packages/torch/nn/functional.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-76">
+          <caret line="1109" selection-start-line="1109" selection-end-line="1109" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ass2/tagger1.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="308">
+          <caret line="14" column="10" lean-forward="true" selection-start-line="14" selection-end-line="15" />
+          <folding>
+            <element signature="e#0#21#0" expanded="true" />
+            <marker date="1543239705518" expanded="true" signature="4838:5397" ph="..." />
+            <marker date="1543239705518" expanded="true" signature="5420:5429" ph="..." />
+            <marker date="1543239705518" expanded="true" signature="7475:7477" ph="..." />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ass2/tagger2.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="470">
+          <caret line="197" column="28" selection-start-line="197" selection-start-column="28" selection-end-line="197" selection-end-column="28" />
+          <folding>
+            <element signature="e#0#21#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ass2/tagger3.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="462">
+          <caret line="208" column="65" selection-start-line="208" selection-start-column="65" selection-end-line="208" selection-end-column="65" />
+          <folding>
+            <element signature="e#0#21#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/ass2/top_k.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="330">
-          <caret line="15" lean-forward="true" selection-start-line="15" selection-end-line="15" />
+        <state relative-caret-position="264">
+          <caret line="12" column="7" lean-forward="true" selection-start-line="12" selection-start-column="7" selection-end-line="12" selection-end-column="7" />
           <folding>
             <element signature="e#0#27#0" expanded="true" />
-            <marker date="1543140062183" expanded="true" signature="247:248" ph="..." />
-            <marker date="1543140062183" expanded="true" signature="247:326" ph="..." />
-            <marker date="1543140062183" expanded="true" signature="247:327" ph="..." />
-            <marker date="1543140062183" expanded="true" signature="458:462" ph="..." />
+            <marker date="1543268810275" expanded="true" signature="1169:1174" ph="..." />
+            <marker date="1543268810275" expanded="true" signature="1169:1188" ph="..." />
+            <marker date="1543268810275" expanded="true" signature="1452:1456" ph="..." />
           </folding>
         </state>
       </provider>

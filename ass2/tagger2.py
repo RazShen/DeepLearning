@@ -4,14 +4,14 @@ import torch.optim as optim
 import torch
 import matplotlib.pyplot as plt
 from matplotlib.legend_handler import HandlerLine2D
-import utils_part1 as utils
+import utils_part2 as utils
 import sys
 
 
 BATCH_SIZE = 1000
 INPUT_SIZE = 250
 LEARN_RATE = 0.01
-EPOCHS = 10
+EPOCHS = 1
 EMBEDDING_VEC = 50
 WINDOW = 5
 
@@ -26,18 +26,20 @@ class ModelBuilder(object):
         self.train_file = "ner/train"
         self.dev_file = "ner/dev"
         if len(sys.argv) == 0:
-            print ("Usage tagger1.py pos/ner")
+            print ("Usage tagger2.py pos/ner")
             exit()
         if sys.argv[1] == "pos":
             self.test_file = "pos/test"
             self.train_file = "pos/train"
             self.dev_file = "pos/dev"
             self.is_pos = True
-
-        self.train_loader = utils.make_data_loader(self.train_file, batch_size=BATCH_SIZE)
+        self.vocab_file = "vocab.txt"
+        self.word_vectors = "wordVectors.txt"
+        self.train_loader = utils.make_data_loader(self.train_file,self.vocab_file, self.word_vectors
+                                                                    ,batch_size=BATCH_SIZE,)
         self.dev_loader = utils.make_data_loader(self.dev_file,dev=True)
         self.test_loader = utils.make_test_data_loader(self.test_file)
-        self.model = FirstNet(input_size=INPUT_SIZE)
+        self.model = FirstNet(INPUT_SIZE, self.word_vectors)
         self.optimizer = optim.Adam(self.model.parameters(), lr=LEARN_RATE)
 
         self.validation_loss_print_dict = {}
@@ -47,7 +49,7 @@ class ModelBuilder(object):
 
     def train_validate_test(self):
         """
-        This method trains the model and validate it, and then test the model & print the results
+        This method trains the model and validate it (10 epochs) and then test the model & print the results
         into a graph.
         :return:
         """
@@ -61,7 +63,7 @@ class ModelBuilder(object):
 
     def print_results_loss(self):
         """
-        This method draws the graph by using the validation epoch-loss
+        This method draws the graph by using the validation and train epoch-loss dictionaries
         :return:
         """
         norm_line, = plt.plot(self.validation_loss_print_dict.keys(), self.validation_loss_print_dict.values(), "red",
@@ -71,7 +73,7 @@ class ModelBuilder(object):
 
     def print_results_acc(self):
         """
-        This method draws the graph by using the validation accuracy
+        This method draws the graph by using the validation and train epoch-loss dictionaries
         :return:
         """
         trained_line, = plt.plot(self.validation_acc_print_dict.keys(), self.validation_acc_print_dict.values(),
@@ -113,8 +115,8 @@ class ModelBuilder(object):
 
     def test(self):
         """
-        This method goes through the data, get the model output create list of tags, later calls a
-        function that tags the test file according to it.
+        This method goes through the data, get the model output and validate it by using negative log likelihood loss
+        also print the results for the test and write the predictions to the test.pred file.
         :return:
         """
         self.model.eval()
@@ -126,15 +128,10 @@ class ModelBuilder(object):
         self.write_test_file(preds)
 
     def write_test_file(self, list_tags):
-        """
-        This method writes the test file according to the pos/ner flag
-        :param list_tags: from the testing
-        :return: new test file.
-        """
         if self.is_pos:
-            prediction_file = open("test1.pos", 'w')
+            prediction_file = open("test3.pos", 'w')
         else:
-            prediction_file = open("test1.ner", 'w')
+            prediction_file = open("test3.ner", 'w')
         with open(self.test_file, "r") as original_test:
             i = 0
             for line in original_test.readlines():
@@ -179,21 +176,26 @@ class ModelBuilder(object):
 
 class FirstNet(nn.Module):
     """
-    Model A, Neural	Network	with 1 hidden layer that uses tanh and embedding layer.
+    Model A, Neural	Network	with two hidden	layers,	the first layer has	a size of 100 and the second layer has a size
+    of 50, both are followed by	ReLU activation	function.
     """
-    def __init__(self, input_size):
+    def __init__(self, input_size, embedding_mat_file):
         """
-        Neural network inherits from nn.Module that has 1 hidden layer.
+        Neural network inherits from nn.Module that has 2 hidden layers, W1,b1,W2,b2,W3,b3.
+        :param image_size: size of image
         """
+
         super(FirstNet, self).__init__()
-        self.E = nn.Embedding(len(utils.words), EMBEDDING_VEC)
-        self.input_size = WINDOW * EMBEDDING_VEC
+        self.e_matrix = utils.get_matrix_from_vectors_file(embedding_mat_file)
+        self.E = nn.Embedding(self.e_matrix.shape[0], self.e_matrix.shape[1])
+        self.E.weight.data.copy_(torch.from_numpy(self.e_matrix))
+        self.input_size = WINDOW * self.e_matrix.shape[1]
         self.fc0 = nn.Linear(input_size, len(utils.tags))
 
 
     def forward(self, x):
         """
-        For example x, get a vector of probabilities using softmax and the 1 hidden layer.
+        For example x, x is  get a vector of probabilities using softmax and the 1 hidden layer.
         :param x: example
         :return: vector of probabilities
         """
