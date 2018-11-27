@@ -18,6 +18,7 @@ EMBEDDING_VEC_SIZE = 50
 
 def get_word_embedding(vec_file, words_file):
     global words
+    words = []
     word_embedding = {}
     for vec, word in izip(open(vec_file), open(words_file)):
         vec = str(vec)
@@ -25,7 +26,7 @@ def get_word_embedding(vec_file, words_file):
         vec_numpy = np.asanyarray(map(float, vec))
         word = str(word)
         word = word.strip("\n").strip()
-        words.add(word)
+        words.append(word)
         word_embedding[word] = vec_numpy
     return word_embedding
 
