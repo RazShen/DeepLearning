@@ -2,6 +2,9 @@ import utils_part1 as utils
 from numpy import linalg as LA
 import numpy
 
+STUDENT = {'name': 'Raz Shenkman',
+           'ID': '311130777'}
+
 
 def most_similar(word, k, get_dist=False):
     """

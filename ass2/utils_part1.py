@@ -15,6 +15,9 @@ tags_to_index = {}
 index_to_tags = {}
 EMBEDDING_VEC_SIZE = 50
 
+STUDENT = {'name': 'Raz Shenkman',
+           'ID': '311130777'}
+
 
 def get_word_embedding(vec_file, words_file):
     """
@@ -82,8 +85,8 @@ def get_not_tagged_sentences(test_data_file):
 
 def make_window_of_words(sentences):
     """
-    returns window
-    :param sentences:
+    returns window of words in sentences
+    :param sentences: list of windows (each window is index of words)
     :return:
     """
     global start, end, word_to_index
@@ -104,6 +107,11 @@ def make_window_of_words(sentences):
 
 
 def make_window_of_untagged_words(sentences):
+    """
+    returns window of words in sentences
+    :param sentences: list of windows (each window is index of words)
+    :return:
+    """
     global start, end
     all_windows = []
     for sentence in sentences:
@@ -121,11 +129,19 @@ def make_window_of_untagged_words(sentences):
 
 
 def get_indexes_of_windows_from_test(w1, w2, w3, w4, w5):
+    """
+    Gets words and return a list of their indexes
+    """
     final_win = [get_word_index(w1), get_word_index(w2), get_word_index(w3), get_word_index(w4), get_word_index(w5)]
     return final_win
 
 
 def get_word_index(word):
+    """
+    return the index of the word if its indexed, otherwise unk index
+    :param word:
+    :return:
+    """
     global unk, word_to_index
     if word in word_to_index:
         return word_to_index[word]
@@ -134,6 +150,11 @@ def get_word_index(word):
 
 
 def load_and_get_train_data(train_data_file, dev=False):
+    """
+    get windows of indexes of words from the train data.
+    :param test_data_file:
+    :return:
+    """
     tagged_sentences = get_tagged_sentences(train_data_file, dev)
     if not dev:
         load_mapping_dicts()
@@ -142,21 +163,35 @@ def load_and_get_train_data(train_data_file, dev=False):
 
 
 def load_and_get_test_data(test_data_file):
+    """
+    get windows of indexes of words from the test data.
+    :param test_data_file:
+    :return:
+    """
     sentences = get_not_tagged_sentences(test_data_file)
     window_of_words = make_window_of_untagged_words(sentences)
     return window_of_words
 
 
 def make_test_data_loader(file, batch_size=1):
+    """
+    make the windows for the test
+    :param file:
+    :param batch_size:
+    :return:
+    """
     windows = load_and_get_test_data(file)
     return windows
-    # windows = torch.from_numpy(np.array(windows))
-    # windows = windows.type(torch.LongTensor)
-    # test = torch.utils.data.TensorDataset(windows)
-    # return torch.utils.data.DataLoader(test)
 
 
 def make_data_loader(file, dev=False, batch_size=1):
+    """
+    make data loaders for train and validation
+    :param file:
+    :param dev:
+    :param batch_size:
+    :return:
+    """
     windows, tags_for_windows = load_and_get_train_data(file, dev)
     windows, tags_for_windows = torch.from_numpy(np.array(windows)), torch.from_numpy(np.array(tags_for_windows))
     windows, tags_for_windows = windows.type(torch.LongTensor), tags_for_windows.type(torch.LongTensor)
@@ -165,6 +200,10 @@ def make_data_loader(file, dev=False, batch_size=1):
 
 
 def load_mapping_dicts():
+    """
+    load the dictionaries.
+    :return:
+    """
     global word_to_index, index_to_words, index_to_tags, tags_to_index, start, end, words, tags
     words.update({start, end})
     word_to_index = {word: i for i, word in enumerate(words)}

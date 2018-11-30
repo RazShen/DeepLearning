@@ -7,6 +7,9 @@ from matplotlib.legend_handler import HandlerLine2D
 import sys
 import numpy
 
+STUDENT = {'name': 'Raz Shenkman',
+           'ID': '311130777'}
+
 if len(sys.argv) < 2:
     print ("Usage tagger3.py pos/ner t/f, example tagger3.py pos t")
     exit()
@@ -19,9 +22,10 @@ else:
 BATCH_SIZE = 2000
 INPUT_SIZE = 250
 LEARN_RATE = 0.01
-EPOCHS = 1
+EPOCHS = 3
 EMBEDDING_VEC = 50
 WINDOW = 5
+HIDDEN_SIZE = 100
 
 
 class ModelBuilder(object):
@@ -72,7 +76,7 @@ class ModelBuilder(object):
 
     def print_results_loss(self):
         """
-        This method draws the graph by using the validation and train epoch-loss dictionaries
+        This method draws the graph by using the validation loss.
         :return:
         """
         norm_line, = plt.plot(self.validation_loss_print_dict.keys(), self.validation_loss_print_dict.values(), "red",
@@ -82,7 +86,7 @@ class ModelBuilder(object):
 
     def print_results_acc(self):
         """
-        This method draws the graph by using the validation and train epoch-loss dictionaries
+        This method draws the graph by using the validation accuracy.
         :return:
         """
         trained_line, = plt.plot(self.validation_acc_print_dict.keys(), self.validation_acc_print_dict.values(),
@@ -139,9 +143,9 @@ class ModelBuilder(object):
 
     def write_test_file(self, list_tags):
         if self.is_pos:
-            prediction_file = open("test3.pos", 'w')
+            prediction_file = open("test4.pos", 'w')
         else:
-            prediction_file = open("test3.ner", 'w')
+            prediction_file = open("test4.ner", 'w')
         with open(self.test_file, "r") as original_test:
             i = 0
             for line in original_test.readlines():
@@ -184,16 +188,10 @@ class ModelBuilder(object):
 
 class FirstNet(nn.Module):
     """
-    Model A, Neural	Network	with two hidden	layers,	the first layer has	a size of 100 and the second layer has a size
-    of 50, both are followed by	ReLU activation	function.
+    Model A, Neural	Network	with 1 hidden layer using tanh.
     """
 
     def __init__(self, input_size, is_embedded, num_of_words=0, embedding_mat_file=None):
-        """
-        Neural network inherits from nn.Module that has 2 hidden layers, W1,b1,W2,b2,W3,b3.
-        :param image_size: size of image
-        """
-
         super(FirstNet, self).__init__()
         self.prefixes = list({utils.index_to_words[i][: 3] for i in xrange(len(utils.index_to_words))})
         self.suffixes = list({utils.index_to_words[i][-3:] for i in xrange(len(utils.index_to_words))})
@@ -209,7 +207,8 @@ class FirstNet(nn.Module):
             self.E = nn.Embedding(len(utils.words), EMBEDDING_VEC)
             self.input_size = WINDOW * EMBEDDING_VEC
 
-        self.fc0 = nn.Linear(self.input_size, len(utils.tags))
+        self.fc0 = nn.Linear(self.input_size, HIDDEN_SIZE)
+        self.fc1 = nn.Linear(HIDDEN_SIZE, len(utils.tags))
         self.e_prefix = nn.Embedding(len(self.prefixes), EMBEDDING_VEC)
         self.e_suffix = nn.Embedding(len(self.suffixes), EMBEDDING_VEC)
 
@@ -237,6 +236,7 @@ class FirstNet(nn.Module):
             suffix_vec_window.type(torch.LongTensor))
         x = x.view(-1, self.input_size)
         x = F.tanh(self.fc0(x))
+        x = self.fc1(x)
         return F.log_softmax(x, dim=1)
 
 

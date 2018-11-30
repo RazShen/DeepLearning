@@ -7,17 +7,21 @@ from matplotlib.legend_handler import HandlerLine2D
 import utils_part1 as utils
 import sys
 
+STUDENT = {'name': 'Raz Shenkman',
+           'ID': '311130777'}
 
-BATCH_SIZE = 1000
+BATCH_SIZE = 1024
 INPUT_SIZE = 250
-LEARN_RATE = 0.01
-EPOCHS = 10
+LEARN_RATE = 0.06
+EPOCHS = 3
 EMBEDDING_VEC = 50
 WINDOW = 5
+HIDDEN_SIZE = 100
 
 
 class ModelBuilder(object):
     def __init__(self):
+        global HIDDEN_SIZE, EPOCHS, LEARN_RATE
         """
         The constructor initializes the datasets, model, optimizer and the dictionaries for the graph.
         """
@@ -33,17 +37,18 @@ class ModelBuilder(object):
             self.train_file = "pos/train"
             self.dev_file = "pos/dev"
             self.is_pos = True
+            LEARN_RATE = 0.008
+            HIDDEN_SIZE = 180
+            EPOCHS = 4
 
         self.train_loader = utils.make_data_loader(self.train_file, batch_size=BATCH_SIZE)
-        self.dev_loader = utils.make_data_loader(self.dev_file,dev=True)
+        self.dev_loader = utils.make_data_loader(self.dev_file, dev=True)
         self.test_loader = utils.make_test_data_loader(self.test_file)
         self.model = FirstNet(input_size=INPUT_SIZE)
         self.optimizer = optim.Adam(self.model.parameters(), lr=LEARN_RATE)
 
         self.validation_loss_print_dict = {}
         self.validation_acc_print_dict = {}
-
-
 
     def train_validate_test(self):
         """
@@ -57,7 +62,6 @@ class ModelBuilder(object):
         self.test()
         self.print_results_loss()
         self.print_results_acc()
-
 
     def print_results_loss(self):
         """
@@ -100,7 +104,8 @@ class ModelBuilder(object):
             if self.is_pos:
                 correct += pred.eq(target.data.view_as(pred)).cpu().sum().item()
             else:
-                if utils.index_to_tags[target.cpu().sum().item()] == "O" and utils.index_to_tags[pred.cpu().sum().item()] == "O":
+                if utils.index_to_tags[target.cpu().sum().item()] == "O" and utils.index_to_tags[
+                    pred.cpu().sum().item()] == "O":
                     continue
                 sum_examples += 1
                 correct += pred.eq(target.data.view_as(pred)).cpu().sum().item()
@@ -109,7 +114,7 @@ class ModelBuilder(object):
             epoch_num, validation_loss, correct, sum_examples,
             100. * correct / sum_examples))
         self.validation_loss_print_dict[epoch_num] = validation_loss
-        self.validation_acc_print_dict[epoch_num] = float(100.0 * correct/sum_examples)
+        self.validation_acc_print_dict[epoch_num] = float(100.0 * correct / sum_examples)
 
     def test(self):
         """
@@ -146,7 +151,6 @@ class ModelBuilder(object):
 
         prediction_file.close()
 
-
     def train(self, epoch):
         """
         This method goes through the data, get the model output and validate it by using negative log likelihood loss
@@ -176,11 +180,11 @@ class ModelBuilder(object):
                                         (100. * correct) / (total_examples * BATCH_SIZE)))
 
 
-
 class FirstNet(nn.Module):
     """
-    Model A, Neural	Network	with 1 hidden layer that uses tanh and embedding layer.
+    NN with 1 hidden layer that uses tanh.
     """
+
     def __init__(self, input_size):
         """
         Neural network inherits from nn.Module that has 1 hidden layer.
@@ -188,8 +192,8 @@ class FirstNet(nn.Module):
         super(FirstNet, self).__init__()
         self.E = nn.Embedding(len(utils.words), EMBEDDING_VEC)
         self.input_size = WINDOW * EMBEDDING_VEC
-        self.fc0 = nn.Linear(input_size, len(utils.tags))
-
+        self.fc0 = nn.Linear(input_size, HIDDEN_SIZE)
+        self.fc1 = nn.Linear(HIDDEN_SIZE, len(utils.tags))
 
     def forward(self, x):
         """
@@ -201,9 +205,8 @@ class FirstNet(nn.Module):
         x = self.E(x)
         x = x.view(-1, self.input_size)
         x = F.tanh(self.fc0(x))
+        x = self.fc1(x)
         return F.log_softmax(x, dim=1)
-
-
 
 
 def main():

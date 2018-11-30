@@ -7,13 +7,16 @@ from matplotlib.legend_handler import HandlerLine2D
 import utils_part2 as utils
 import sys
 
+STUDENT = {'name': 'Raz Shenkman',
+           'ID': '311130777'}
 
-BATCH_SIZE = 1000
+BATCH_SIZE = 1024
 INPUT_SIZE = 250
 LEARN_RATE = 0.01
-EPOCHS = 10
+EPOCHS = 2
 EMBEDDING_VEC = 50
 WINDOW = 5
+HIDDEN_SIZE = 100
 
 
 class ModelBuilder(object):
@@ -35,17 +38,15 @@ class ModelBuilder(object):
             self.is_pos = True
         self.vocab_file = "vocab.txt"
         self.word_vectors = "wordVectors.txt"
-        self.train_loader = utils.make_data_loader(self.train_file,self.vocab_file, self.word_vectors
-                                                                    ,batch_size=BATCH_SIZE,)
-        self.dev_loader = utils.make_data_loader(self.dev_file,dev=True)
+        self.train_loader = utils.make_data_loader(self.train_file, self.vocab_file, self.word_vectors
+                                                   , batch_size=BATCH_SIZE, )
+        self.dev_loader = utils.make_data_loader(self.dev_file, dev=True)
         self.test_loader = utils.make_test_data_loader(self.test_file)
         self.model = FirstNet(INPUT_SIZE, self.word_vectors)
         self.optimizer = optim.Adam(self.model.parameters(), lr=LEARN_RATE)
 
         self.validation_loss_print_dict = {}
         self.validation_acc_print_dict = {}
-
-
 
     def train_validate_test(self):
         """
@@ -59,7 +60,6 @@ class ModelBuilder(object):
         self.test()
         self.print_results_loss()
         self.print_results_acc()
-
 
     def print_results_loss(self):
         """
@@ -102,7 +102,8 @@ class ModelBuilder(object):
             if self.is_pos:
                 correct += pred.eq(target.data.view_as(pred)).cpu().sum().item()
             else:
-                if utils.index_to_tags[target.cpu().sum().item()] == "O" and utils.index_to_tags[pred.cpu().sum().item()] == "O":
+                if utils.index_to_tags[target.cpu().sum().item()] == "O" and utils.index_to_tags[
+                    pred.cpu().sum().item()] == "O":
                     continue
                 sum_examples += 1
                 correct += pred.eq(target.data.view_as(pred)).cpu().sum().item()
@@ -111,7 +112,7 @@ class ModelBuilder(object):
             epoch_num, validation_loss, correct, sum_examples,
             100. * correct / sum_examples))
         self.validation_loss_print_dict[epoch_num] = validation_loss
-        self.validation_acc_print_dict[epoch_num] = float(100.0 * correct/sum_examples)
+        self.validation_acc_print_dict[epoch_num] = float(100.0 * correct / sum_examples)
 
     def test(self):
         """
@@ -143,7 +144,6 @@ class ModelBuilder(object):
 
         prediction_file.close()
 
-
     def train(self, epoch):
         """
         This method goes through the data, get the model output and validate it by using negative log likelihood loss
@@ -173,25 +173,19 @@ class ModelBuilder(object):
                                         (100. * correct) / (total_examples * BATCH_SIZE)))
 
 
-
 class FirstNet(nn.Module):
     """
-    Model A, Neural	Network	with two hidden	layers,	the first layer has	a size of 100 and the second layer has a size
-    of 50, both are followed by	ReLU activation	function.
+    NN with 1 hidden layer that uses tanh.
     """
-    def __init__(self, input_size, embedding_mat_file):
-        """
-        Neural network inherits from nn.Module that has 2 hidden layers, W1,b1,W2,b2,W3,b3.
-        :param image_size: size of image
-        """
 
+    def __init__(self, input_size, embedding_mat_file):
         super(FirstNet, self).__init__()
         self.e_matrix = utils.get_matrix_from_vectors_file(embedding_mat_file)
         self.E = nn.Embedding(self.e_matrix.shape[0], self.e_matrix.shape[1])
         self.E.weight.data.copy_(torch.from_numpy(self.e_matrix))
         self.input_size = WINDOW * self.e_matrix.shape[1]
-        self.fc0 = nn.Linear(input_size, len(utils.tags))
-
+        self.fc0 = nn.Linear(input_size, HIDDEN_SIZE)
+        self.fc1 = nn.Linear(HIDDEN_SIZE, len(utils.tags))
 
     def forward(self, x):
         """
@@ -203,9 +197,8 @@ class FirstNet(nn.Module):
         x = self.E(x)
         x = x.view(-1, self.input_size)
         x = F.tanh(self.fc0(x))
+        x = self.fc1(x)
         return F.log_softmax(x, dim=1)
-
-
 
 
 def main():
