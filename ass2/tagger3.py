@@ -19,7 +19,7 @@ if sys.argv[2] == "t":
 else:
     import utils_part1 as utils
 
-BATCH_SIZE = 2000
+BATCH_SIZE = 1024
 INPUT_SIZE = 250
 LEARN_RATE = 0.01
 EPOCHS = 3
