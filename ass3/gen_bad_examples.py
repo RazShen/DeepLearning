@@ -1,21 +1,44 @@
 import rstr
 from random import shuffle
 from itertools import izip
-
+import random
 NUM_EXAMPLES = 500
 
 
-def gen_specific_examples(file_name, pos=True):
+
+
+
+def gen_bad_examples_1(file_name, pos=True):
     with open(file_name, "w") as file:
         for i in xrange(NUM_EXAMPLES):
             if pos:
-                file.write(rstr.xeger(r'[1-9]{1,15}a{1,15}[1-9]{1,15}b{1,15}[1-9]{1,15}'
+                file.write(rstr.xeger(r'[1-9]+a+[1-9]+b+[1-9]+c+[1-9]+d+[1-9]+') + "\n")
+            else:
+                file.write(rstr.xeger(r'[1-9]+a+[1-9]+c+[1-9]+b+[1-9]+d+[1-9]+') + "\n")
+
+
+def gen_bad_examples_2(file_name, pos=True):
+    with open(file_name, "w") as file:
+        for i in xrange(NUM_EXAMPLES):
+            if pos:
+                w = rstr.xeger(r'[a-z]+')
+                w_reverse = w[::-1]
+                w += "%%%"
+                w += w_reverse
+                file.write(w + "\n")
+            else:
+                w = rstr.xeger(r'[a-z]+%%%[a-z]+')
+                file.write(w + "\n")
+
+def gen_bad_examples_3(file_name, pos=True):
+    with open(file_name, "w") as file:
+        for i in xrange(NUM_EXAMPLES):
+            if pos:
+                file.write(rstr.xeger(r'[1-9]{1,15}a{1,15}[1-15]{1,15}b{1,15}[1-9]{1,15}'
                                       r'c{1,15}[1-9]{1,15}d{1,15}[1-9]{1,15}') + "\n")
             else:
                 file.write(rstr.xeger(r'[1-9]{1,15}a{1,15}[1-9]{1,15}c{1,15}'
                                       r'[1-9]{1,15}b{1,15}[1-9]{1,15}d{1,15}[1-9]{1,15}') + "\n")
-
-
 
 
 def gen_test_and_train(pos_examples, neg_examples):
@@ -37,8 +60,8 @@ def gen_test_and_train(pos_examples, neg_examples):
 
 
 def gen_all_examples():
-    gen_specific_examples("pos_examples")
-    gen_specific_examples("neg_examples", pos=False)
+    gen_bad_examples_2("pos_examples")
+    gen_bad_examples_2("neg_examples", pos=False)
 
 
 gen_all_examples()
