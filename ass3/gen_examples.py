@@ -4,8 +4,17 @@ from itertools import izip
 
 NUM_EXAMPLES = 500
 
+STUDENT = {'name': 'Raz Shenkman',
+           'ID': '311130777'}
+
 
 def gen_specific_examples(file_name, pos=True):
+    """
+    generate specific examples for the model.
+    :param file_name: to write the examples into
+    :param pos: if true generate examples with tag 1
+    :return:
+    """
     with open(file_name, "w") as file:
         for i in xrange(NUM_EXAMPLES):
             if pos:
@@ -16,9 +25,13 @@ def gen_specific_examples(file_name, pos=True):
                                       r'[1-9]{1,15}b{1,15}[1-9]{1,15}d{1,15}[1-9]{1,15}') + "\n")
 
 
-
-
 def gen_test_and_train(pos_examples, neg_examples):
+    """
+    split the positive and negative examples into train and test
+    :param pos_examples:
+    :param neg_examples:
+    :return:
+    """
     positive_examples = open(pos_examples, "r").readlines()
     negative_examples = open(neg_examples, "r").readlines()
     all_examples = []
@@ -37,6 +50,10 @@ def gen_test_and_train(pos_examples, neg_examples):
 
 
 def gen_all_examples():
+    """
+    generate all of the examples (positive and negative)
+    :return:
+    """
     gen_specific_examples("pos_examples")
     gen_specific_examples("neg_examples", pos=False)
 
