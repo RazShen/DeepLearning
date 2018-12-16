@@ -10,7 +10,7 @@ STUDENT = {'name': 'Raz Shenkman',
 
 def gen_specific_examples(file_name, pos=True):
     """
-    generate specific examples for the model.
+    generate specific examples for the a_pos_m.
     :param file_name: to write the examples into
     :param pos: if true generate examples with tag 1
     :return:

@@ -23,7 +23,7 @@ class ModelBuilder(object):
     def __init__(self):
         global HIDDEN_SIZE, EPOCHS, LEARN_RATE
         """
-        The constructor initializes the datasets, model, optimizer and the dictionaries for the graph.
+        The constructor initializes the datasets, a_pos_m, optimizer and the dictionaries for the graph.
         """
         self.is_pos = False
         self.test_file = "ner/test"
@@ -52,7 +52,7 @@ class ModelBuilder(object):
 
     def train_validate_test(self):
         """
-        This method trains the model and validate it, and then test the model & print the results
+        This method trains the a_pos_m and validate it, and then test the a_pos_m & print the results
         into a graph.
         :return:
         """
@@ -86,7 +86,7 @@ class ModelBuilder(object):
 
     def validation(self, epoch_num):
         """
-        This method goes through the data, get the model output and validate it by using negative log likelihood loss
+        This method goes through the data, get the a_pos_m output and validate it by using negative log likelihood loss
         also updates the dictionary and print the results.
         :param epoch_num: number of epoch we're in
         :return:
@@ -118,7 +118,7 @@ class ModelBuilder(object):
 
     def test(self):
         """
-        This method goes through the data, get the model output create list of tags, later calls a
+        This method goes through the data, get the a_pos_m output create list of tags, later calls a
         function that tags the test file according to it.
         :return:
         """
@@ -153,8 +153,8 @@ class ModelBuilder(object):
 
     def train(self, epoch):
         """
-        This method goes through the data, get the model output and validate it by using negative log likelihood loss
-        also train the model for every batch of examples we have looped through using our optimizer.
+        This method goes through the data, get the a_pos_m output and validate it by using negative log likelihood loss
+        also train the a_pos_m for every batch of examples we have looped through using our optimizer.
         :param epoch: number of epoch we're in
         :return:
         """
@@ -211,7 +211,7 @@ class FirstNet(nn.Module):
 
 def main():
     """
-    Initializes model builder, train, validate and then test the model.
+    Initializes a_pos_m builder, train, validate and then test the a_pos_m.
     :return:
     """
     my_obj = ModelBuilder()

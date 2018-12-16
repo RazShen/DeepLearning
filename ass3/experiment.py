@@ -130,9 +130,9 @@ def main():
         print ("Usage python experiment.py <train file path> <test file path>")
         exit()
     vocab = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d"]
-    vocab2 = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u",
-              "v", "w", "x", "y", "z"]  # for testing the capabilities of the network
-    epochs = 10
+    #vocab = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k",
+    #          "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"]
+    epochs = 5
     vec_per_char_size = 100
     lstm_dim = 100
     output_dim = 2

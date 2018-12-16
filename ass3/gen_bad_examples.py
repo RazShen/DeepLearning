@@ -9,7 +9,6 @@ STUDENT = {'name': 'Raz Shenkman',
            'ID': '311130777'}
 
 
-
 def gen_bad_examples_1(file_name, pos=True):
     with open(file_name, "w") as file:
         for i in xrange(NUM_EXAMPLES):
@@ -25,7 +24,7 @@ def gen_bad_examples_2(file_name, pos=True):
             if pos:
                 w = rstr.xeger(r'[a-z]+')
                 w_reverse = w[::-1]
-                x = random.randint(0,1)
+                x = random.randint(0, 1)
                 if x:
                     w += rstr.xeger(r'[a-z]')
                 w += w_reverse
@@ -34,20 +33,20 @@ def gen_bad_examples_2(file_name, pos=True):
                 w = rstr.xeger(r'[a-z]+')
                 file.write(w + "\n")
 
+
 def gen_bad_examples_3(file_name, pos=True):
     with open(file_name, "w") as file:
         for i in xrange(NUM_EXAMPLES):
             if pos:
                 w = rstr.xeger(r'[a-z]+')
                 w += w
-                x = random.randint(0,1)
+                x = random.randint(0, 1)
                 if x:
                     w += w
                 file.write(w + "\n")
             else:
                 w = rstr.xeger(r'[a-z]+')
                 file.write(w + "\n")
-
 
 
 def gen_test_and_train(pos_examples, neg_examples):

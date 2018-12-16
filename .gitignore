@@ -18,3 +18,5 @@ venv4/
 *.xml
 *.ner
 *.pos
+/ass3/data/models/*
+models_smaller*
