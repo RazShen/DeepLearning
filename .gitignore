@@ -1,4 +1,5 @@
-ass4/src/glove.6B.200d.txt
+ass4/src/data/snli_1.0/*
+ass4/src/data/glove.6B.200d.txt
 ass1/grad_check.pyc
 ass1/loglinear.pyc
 ass1/utils.pyc
