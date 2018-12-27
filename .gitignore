@@ -1,3 +1,4 @@
+ass4/src/glove.6B.200d.txt
 ass1/grad_check.pyc
 ass1/loglinear.pyc
 ass1/utils.pyc
@@ -20,3 +21,6 @@ venv4/
 *.pos
 /ass3/data/models/*
 models_smaller*
+*/venv/
+*/snli_1.0/*
+
