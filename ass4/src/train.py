@@ -65,27 +65,32 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    utils.config_logger(args.verbose)
+    utils.config_logger(True)
     logger = utils.get_logger('train')
     logger.debug('Training with following options: %s' % ' '.join(sys.argv))
+    # train pairs is the list of tuples ([sentence1 words], [sentence2 words], label)
     train_pairs = ioutils.read_corpus(args.train, args.lower, args.lang)
+    # validation pairs is the list of tuples ([sentence1 words], [sentence2 words], label)
     valid_pairs = ioutils.read_corpus(args.validation, args.lower, args.lang)
 
     # whether to generate embeddings for unknown, padding, null
+    # word_dict is a dictionary of words and indices and embeddings matrix is a matrix where its indices are the
+    # vector for the word...
     word_dict, embeddings = ioutils.load_embeddings(args.embeddings, args.vocab,
                                                     True, normalize=True)
 
     logger.info('Converting words to indices')
     # find out which labels are there in the data
     # (more flexible to different datasets)
-    label_dict = utils.create_label_dict(train_pairs)
+    label_dict = utils.create_label_dict(train_pairs) # create dictionary of the labels and their index
+    # train_pairs is list of tuples, where each tuple is ([sentence1 words], [sentence2 words], label).
     train_data = utils.create_dataset(train_pairs, word_dict, label_dict)
     valid_data = utils.create_dataset(valid_pairs, word_dict, label_dict)
 
-    ioutils.write_params(args.save, lowercase=args.lower, language=args.lang,
-                         model=args.model)
-    ioutils.write_label_dict(label_dict, args.save)
-    ioutils.write_extra_embeddings(embeddings, args.save)
+    # ioutils.write_params(args.save, lowercase=args.lower, language=args.lang,
+    #                      model=args.model)
+    # ioutils.write_label_dict(label_dict, args.save)
+    # ioutils.write_extra_embeddings(embeddings, args.save)
 
     msg = '{} sentences have shape {} (firsts) and {} (seconds)'
     logger.debug(msg.format('Training',
@@ -107,11 +112,11 @@ if __name__ == '__main__':
                                            training=True,
                                            project_input=args.no_project,
                                            optimizer=args.optim)
-    else:
-        model = LSTMClassifier(args.num_units, 3, vocab_size,
-                               embedding_size, training=True,
-                               project_input=args.no_project,
-                               optimizer=args.optim)
+    # else:
+        # model = LSTMClassifier(args.num_units, 3, vocab_size,
+        #                        embedding_size, training=True,
+        #                        project_input=args.no_project,
+        #                        optimizer=args.optim)
 
     model.initialize(sess, embeddings)
 

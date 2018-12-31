@@ -77,6 +77,7 @@ def mask_3d(values, sentence_sizes, mask_value, dimension=2):
     return masked
 
 
+
 class DecomposableNLIModel(object):
     """
     Base abstract class for decomposable NLI models
@@ -100,6 +101,11 @@ class DecomposableNLIModel(object):
         self.num_classes = num_classes
         self.project_input = project_input
 
+        """
+        Tensorflow placeholder allows us to create our computation graph,
+        without needing the data right away. 
+        """
+
         # we have to supply the vocab size to allow validate_shape on the
         # embeddings variable, which is necessary down in the graph to determine
         # the shape of inputs at graph construction time
@@ -112,27 +118,32 @@ class DecomposableNLIModel(object):
         self.sentence1_size = tf.placeholder(tf.int32, [None], 'sent1_size')
         self.sentence2_size = tf.placeholder(tf.int32, [None], 'sent2_size')
         self.label = tf.placeholder(tf.int32, [None], 'label')
-        self.learning_rate = tf.placeholder(tf.float32, [],
-                                            name='learning_rate')
+        self.learning_rate = tf.placeholder(tf.float32, [], name='learning_rate')
         self.l2_constant = tf.placeholder(tf.float32, [], 'l2_constant')
         self.clip_value = tf.placeholder(tf.float32, [], 'clip_norm')
         self.dropout_keep = tf.placeholder(tf.float32, [], 'dropout')
         self.embedding_size = embedding_size
-
         # we initialize the embeddings from a placeholder to circumvent
         # tensorflow's limitation of 2 GB nodes in the graph
+        """
+        Variable allows to keep object as equation, until we create the computation graph.
+        """
         self.embeddings = tf.Variable(self.embeddings_ph, trainable=False,
                                       validate_shape=True)
 
         # clip the sentences to the length of the longest one in the batch
         # this saves processing time
+        """
+        Here self.sentence1 and self.sentence2 are placeholders,
+        clip_sentence takes every batch in the input and shortens each
+        sentence by the length of the longest sentence in the batch.
+        """
         clipped_sent1 = clip_sentence(self.sentence1, self.sentence1_size)
         clipped_sent2 = clip_sentence(self.sentence2, self.sentence2_size)
         embedded1 = tf.nn.embedding_lookup(self.embeddings, clipped_sent1)
         embedded2 = tf.nn.embedding_lookup(self.embeddings, clipped_sent2)
         repr1 = self._transformation_input(embedded1)
         repr2 = self._transformation_input(embedded2, True)
-
         # the architecture has 3 main steps: soft align, compare and aggregate
         # alpha and beta have shape (batch, time_steps, embeddings)
         self.alpha, self.beta = self.attend(repr1, repr2)
@@ -203,6 +214,10 @@ class DecomposableNLIModel(object):
         :return: projected embeddings with shape (batch, time_steps, num_units)
         """
         time_steps = tf.shape(embeddings)[1]
+        """
+        When total elements in array is 100 (for example), tf.reshape with -1 makes sure
+        that the shape of -1 dimension is adjusting itself to complete to 100 elements in the new shape.
+        """
         embeddings_2d = tf.reshape(embeddings, [-1, self.embedding_size])
 
         with tf.variable_scope('projection', reuse=reuse_weights):

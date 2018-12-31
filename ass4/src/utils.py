@@ -275,7 +275,7 @@ def create_dataset(pairs, word_dict, label_dict=None,
     else:
         labels = None
 
-    return RTEDataset(sentences1, sentences2, sizes1, sizes2, labels)
+    return RTEDataset(sentences1, sentences2, sizes1,sizes2, labels)
 
 
 def _convert_pairs_to_indices(sentences, word_dict, max_len=None,
@@ -303,10 +303,12 @@ def _convert_pairs_to_indices(sentences, word_dict, max_len=None,
 
     if max_len is None:
         max_len = sizes.max()
-
+    # max_len is the length of the longest sentence if None
     shape = (len(sentences), max_len)
+    # make matrix of number_of_sentences X maximum_length_of_sentence where each value is index of PAD word.
     array = np.full(shape, word_dict[PADDING], dtype=np.int32)
 
+    # Fill the array with the actual indices up to the length of each sentence.
     for i, sent in enumerate(sentences):
         indices = [word_dict[token] for token in sent]
 

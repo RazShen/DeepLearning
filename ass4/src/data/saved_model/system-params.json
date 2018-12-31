@@ -1,1 +1,1 @@
-{"lowercase": false, "model": "lstm", "language": "en"}
+{"lowercase": true, "model": "mlp", "language": "en"}

@@ -1,0 +1,20 @@
+Liz Aharonian 316584960
+Raz Shenkman 311130777
+Ori Ben-Zaken 311492110
+
+Obtain the Data:
+    Download pre-trained word vectors and SNLI_1.0 (train, dev and test data):
+        step 1) sudo chmod +x setup.sh
+        step 2) ./setup.sh
+        step 3) make sure glove.6B.200d.txt exists
+        (if not, download it manually from https://nlp.stanford.edu/data/glove.6B.zip)
+        step 4) make sure snli_1.0 folder exists with the files:
+            snli_1.0_dev.jsonl
+            snli_1.0_dev.txt
+            snli_1.0_test.jsonl
+            snli_1.0_test.txt
+            snli_1.0_train.jsonl
+            snli_1.0_train.txt
+        (if not, download it manually from https://nlp.stanford.edu/projects/snli/snli_1.0.zip)
+
+Run the model:

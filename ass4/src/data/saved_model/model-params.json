@@ -1,1 +1,1 @@
-{"vocab_size": 400003, "project_input": true, "embedding_size": 200, "num_units": 100, "num_classes": 3}
+{"vocab_size": 400003, "embedding_size": 200, "use_intra": true, "distance_biases": 10, "num_units": 100, "project_input": true, "num_classes": 3}

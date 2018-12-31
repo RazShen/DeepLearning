@@ -83,12 +83,15 @@ def load_embeddings(embeddings_path, vocabulary_path=None,
 
     logging.debug('Loading embeddings')
     if vocabulary_path is None:
+        # GloVe file contains both vocabulary and embeddings
         wordlist, embeddings = load_text_embeddings(embeddings_path)
     else:
         wordlist, embeddings = load_binary_embeddings(embeddings_path,
                                                       vocabulary_path)
 
     if generate or load_extra_from:
+        # mapping every word to tuple of (word, index) where the indices starts from 3 up to len(wordlist) + 3
+        # saving indices 0-2 for special cases.
         mapping = zip(wordlist, range(3, len(wordlist) + 3))
 
         # always map OOV words to 0
@@ -96,27 +99,30 @@ def load_embeddings(embeddings_path, vocabulary_path=None,
         wd[utils.UNKNOWN] = 0
         wd[utils.PADDING] = 1
         wd[utils.GO] = 2
-
+        # geenrating 3 random vectors for unknown, padding, start
         if generate:
             vector_size = embeddings.shape[1]
             extra = [_generate_random_vector(vector_size),
                      _generate_random_vector(vector_size),
                      _generate_random_vector(vector_size)]
 
-        else:
-            path = os.path.join(load_extra_from, 'extra-embeddings.npy')
-            extra = np.load(path)
+        # else:
+        #     path = os.path.join(load_extra_from, 'extra-embeddings.npy')
+        #     extra = np.load(path)
 
+
+        # add those random vectors to the embedded matrix (in indexes 0,1,2)
         embeddings = np.append(extra, embeddings, 0)
 
-    else:
-        mapping = zip(wordlist, range(0, len(wordlist)))
-        wd = defaultdict(int, mapping)
+
+    # else:
+    #     mapping = zip(wordlist, range(0, len(wordlist)))
+    #     wd = defaultdict(int, mapping)
 
     logging.debug('Embeddings have shape {}'.format(embeddings.shape))
     if normalize:
         embeddings = utils.normalize_embeddings(embeddings)
-
+    # wd is a dictionary that maps from word to index
     return wd, embeddings
 
 
@@ -161,8 +167,8 @@ def load_text_embeddings(path):
             word = fields[0]
             words.append(word)
             vector = np.array([float(x) for x in fields[1:]], dtype=np.float32)
-            vectors.append(vector)
-
+            vectors.append(vector) # vectors is list of numpy arrays
+    # make embeddings as numpy array (numpy array of numpy arrays)
     embeddings = np.array(vectors, dtype=np.float32)
 
     return words, embeddings
@@ -268,10 +274,20 @@ def read_corpus(filename, lowercase, language='en'):
                 if lowercase:
                     line = line.lower()
                 data = json.loads(line)
+                # gold label is the choosing the tag chosen by the majority (if there is one)
                 if data['gold_label'] == '-':
                     # ignore items without a gold label
                     continue
 
+
+                """
+                Our first try to parse the data didn't work good enough, it seems there has to be a
+                a splitting also the punctuation from words.
+                #t = (data['sentence1'].split(" "), data['sentence2'].split(" "), data['gold_label'])
+                """
+
+
+                # taking the parsing tree of the sentences from the data
                 sentence1_parse = data['sentence1_parse']
                 sentence2_parse = data['sentence2_parse']
                 label = data['gold_label']
@@ -280,6 +296,8 @@ def read_corpus(filename, lowercase, language='en'):
                 tree2 = nltk.Tree.fromstring(sentence2_parse)
                 tokens1 = tree1.leaves()
                 tokens2 = tree2.leaves()
+                # tuple t contains the list of words from sentence 1 (tokens1) and from sentence 2 (tokens2).
+                # and the label (which is the gold label)
                 t = (tokens1, tokens2, label)
                 useful_data.append(t)
 
