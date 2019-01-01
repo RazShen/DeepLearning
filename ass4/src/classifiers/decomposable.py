@@ -155,13 +155,10 @@ class DecomposableNLIModel(object):
         hits = tf.equal(tf.cast(self.answer, tf.int32), self.label)
         self.accuracy = tf.reduce_mean(tf.cast(hits, tf.float32),
                                        name='accuracy')
-        cross_entropy = tf.nn.\
-            sparse_softmax_cross_entropy_with_logits(logits=self.logits,
-                                                     labels=self.label)
+        cross_entropy = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=self.logits, labels=self.label)
         self.labeled_loss = tf.reduce_mean(cross_entropy)
-        weights = [v for v in tf.trainable_variables()
-                   if 'weight' in v.name]
-        l2_partial_sum = sum([tf.nn.l2_loss(weight) for weight in weights])
+        weights_trust = [v for v in tf.trainable_variables() if 'weight' in v.name]
+        l2_partial_sum = sum([tf.nn.l2_loss(weight) for weight in weights_trust])
         l2_loss = tf.multiply(self.l2_constant, l2_partial_sum, 'l2_loss')
         self.loss = tf.add(self.labeled_loss, l2_loss, 'loss')
 
@@ -202,7 +199,7 @@ class DecomposableNLIModel(object):
             if self.clip_value is not None:
                 gradients, _ = tf.clip_by_global_norm(gradients,
                                                       self.clip_value)
-            self.train_op = optimizer.apply_gradients(zip(gradients, v))
+            self.train_optimizer = optimizer.apply_gradients(zip(gradients, v))
 
     def project_embeddings(self, embeddings, reuse_weights=False):
         """
@@ -480,13 +477,13 @@ class DecomposableNLIModel(object):
                  }
         return feeds
 
-    def _run_on_validation(self, session, feeds):
+    def _run_on_validation(self, session, feeds_validation):
         """
         Run the model with validation data, providing any useful information.
 
         :return: a tuple (validation_loss, validation_acc)
         """
-        loss, acc = session.run([self.loss, self.accuracy], feeds)
+        loss, acc = session.run([self.loss, self.accuracy], feeds_validation)
         return loss, acc
 
     def train(self, session, train_dataset, valid_dataset, save_dir,
@@ -526,15 +523,23 @@ class DecomposableNLIModel(object):
         for i in range(num_epochs):
             train_dataset.shuffle_data()
             batch_index = 0
-
+            """
+            batch_index indicates the start position of the current batch,
+            batch_index2 is the end position of the current batch, taken from our
+            train data set.
+            """
             while batch_index < train_dataset.num_items:
                 batch_index2 = batch_index + batch_size
+
                 batch = train_dataset.get_batch(batch_index, batch_index2)
-                feeds = self._create_batch_feed(batch, learning_rate,
+                """
+                Batch here is of class RTEDataset. already a subset of train_dataset
+                """
+                feeds_for_valid = self._create_batch_feed(batch, learning_rate,
                                                 dropout_keep, l2, clip_norm)
 
-                ops = [self.train_op, self.loss, self.accuracy]
-                _, loss, accuracy = session.run(ops, feed_dict=feeds)
+                ops = [self.train_optimizer, self.loss, self.accuracy]
+                _, loss, accuracy = session.run(ops, feed_dict=feeds_for_valid)
                 accumulated_loss += loss * batch.num_items
                 accumulated_accuracy += accuracy * batch.num_items
                 accumulated_num_items += batch.num_items
@@ -543,17 +548,20 @@ class DecomposableNLIModel(object):
                 batch_counter += 1
 
                 if batch_counter % report_interval == 0:
+                    """
+                    avg_loss is the loss of all the batches seen so far.
+                    """
                     avg_loss = accumulated_loss / accumulated_num_items
                     avg_accuracy = accumulated_accuracy / accumulated_num_items
                     accumulated_loss = 0
                     accumulated_accuracy = 0
                     accumulated_num_items = 0
 
-                    feeds = self._create_batch_feed(valid_dataset,
+                    feeds_for_valid = self._create_batch_feed(valid_dataset,
                                                     0, 1, l2, 0)
 
                     valid_loss, valid_acc = self._run_on_validation(session,
-                                                                    feeds)
+                                                                    feeds_for_valid)
 
                     msg = '%d completed epochs, %d batches' % (i, batch_counter)
                     msg += '\tAvg train loss: %f' % avg_loss
@@ -568,51 +576,51 @@ class DecomposableNLIModel(object):
 
                     logger.info(msg)
 
-    def evaluate(self, session, dataset, return_answers, batch_size=5000):
-        """
-        Run the model on the given dataset
-
-        :param session: tensorflow session
-        :param dataset: the dataset object
-        :type dataset: utils.RTEDataset
-        :param return_answers: if True, also return the answers
-        :param batch_size: how many items to run at a time. Relevant if you're
-            evaluating the train set performance
-        :return: if not return_answers, a tuple (loss, accuracy)
-            or else (loss, accuracy, answers)
-        """
-        if return_answers:
-            ops = [self.loss, self.accuracy, self.answer]
-        else:
-            ops = [self.loss, self.accuracy]
-
-        i = 0
-        j = batch_size
-        # store accuracies and losses weighted by the number of items in the
-        # batch to take the correct average in the end
-        weighted_accuracies = []
-        weighted_losses = []
-        answers = []
-        while i < dataset.num_items:
-            subset = dataset.get_batch(i, j)
-
-            last = i + subset.num_items
-            logging.debug('Evaluating items between %d and %d' % (i, last))
-            i = j
-            j += batch_size
-
-            feeds = self._create_batch_feed(subset, 0, 1, 0, 0)
-            results = session.run(ops, feeds)
-            weighted_losses.append(results[0] * subset.num_items)
-            weighted_accuracies.append(results[1] * subset.num_items)
-            if return_answers:
-                answers.append(results[2])
-
-        avg_accuracy = np.sum(weighted_accuracies) / dataset.num_items
-        avg_loss = np.sum(weighted_losses) / dataset.num_items
-        ret = [avg_loss, avg_accuracy]
-        if return_answers:
-            all_answers = np.concatenate(answers)
-            ret.append(all_answers)
-
-        return ret
+    # def evaluate(self, session, dataset, return_answers, batch_size=5000):
+    #     """
+    #     Run the model on the given dataset
+    #
+    #     :param session: tensorflow session
+    #     :param dataset: the dataset object
+    #     :type dataset: utils.RTEDataset
+    #     :param return_answers: if True, also return the answers
+    #     :param batch_size: how many items to run at a time. Relevant if you're
+    #         evaluating the train set performance
+    #     :return: if not return_answers, a tuple (loss, accuracy)
+    #         or else (loss, accuracy, answers)
+    #     """
+    #     if return_answers:
+    #         ops = [self.loss, self.accuracy, self.answer]
+    #     else:
+    #         ops = [self.loss, self.accuracy]
+    #
+    #     i = 0
+    #     j = batch_size
+    #     # store accuracies and losses weighted by the number of items in the
+    #     # batch to take the correct average in the end
+    #     weighted_accuracies = []
+    #     weighted_losses = []
+    #     answers = []
+    #     while i < dataset.num_items:
+    #         subset = dataset.get_batch(i, j)
+    #
+    #         last = i + subset.num_items
+    #         logging.debug('Evaluating items between %d and %d' % (i, last))
+    #         i = j
+    #         j += batch_size
+    #
+    #         feeds = self._create_batch_feed(subset, 0, 1, 0, 0)
+    #         results = session.run(ops, feeds)
+    #         weighted_losses.append(results[0] * subset.num_items)
+    #         weighted_accuracies.append(results[1] * subset.num_items)
+    #         if return_answers:
+    #             answers.append(results[2])
+    #
+    #     avg_accuracy = np.sum(weighted_accuracies) / dataset.num_items
+    #     avg_loss = np.sum(weighted_losses) / dataset.num_items
+    #     ret = [avg_loss, avg_accuracy]
+    #     if return_answers:
+    #         all_answers = np.concatenate(answers)
+    #         ret.append(all_answers)
+    #
+    #     return ret
