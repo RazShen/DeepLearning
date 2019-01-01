@@ -5,8 +5,6 @@ from __future__ import division, unicode_literals
 """
 Utility functions.
 """
-
-import logging
 import nltk
 import os
 import json
@@ -154,7 +152,7 @@ def count_parameters():
         variable_params = 1
         for dim in shape:
             variable_params *= dim.value
-        logging.debug('%s: %d params' % (variable.name, variable_params))
+        print('%s: %d params' % (variable.name, variable_params))
         total_params += variable_params
     return total_params
 
@@ -173,30 +171,6 @@ def count_corpus_tokens(pairs):
         c.update(t.lower() for t in sent2)
 
     return c
-
-
-def config_logger(verbose):
-    """
-    Setup basic logger configuration
-
-    :param verbose: boolean
-    :return:
-    """
-    level = logging.DEBUG if verbose else logging.INFO
-    logging.basicConfig(format='%(message)s', level=level)
-
-
-def get_logger(name='logger'):
-    """
-    Setup and return a simple logger.
-    :return:
-    """
-    logger = logging.getLogger(name)
-    handler = logging.StreamHandler()
-    logger.addHandler(handler)
-    logger.propagate = False
-
-    return logger
 
 
 def shuffle_arrays(*arrays):
