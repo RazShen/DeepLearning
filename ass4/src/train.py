@@ -66,8 +66,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     utils.config_logger(True)
-    logger = utils.get_logger('train')
-    logger.debug('Training with following options: %s' % ' '.join(sys.argv))
+    print('Training with following options: %s' % ' '.join(sys.argv))
     # train pairs is the list of tuples ([sentence1 words], [sentence2 words], label)
     train_pairs = ioutils.read_corpus(args.train, args.lower, args.lang)
     # validation pairs is the list of tuples ([sentence1 words], [sentence2 words], label)
@@ -79,7 +78,7 @@ if __name__ == '__main__':
     word_dict, embeddings = ioutils.load_embeddings(args.embeddings, args.vocab,
                                                     True, normalize=True)
 
-    logger.info('Converting words to indices')
+    print('Converting words to indices')
     # find out which labels are there in the data
     # (more flexible to different datasets)
     label_dict = utils.create_label_dict(train_pairs) # create dictionary of the labels and their index
@@ -93,15 +92,15 @@ if __name__ == '__main__':
     # ioutils.write_extra_embeddings(embeddings, args.save)
 
     msg = '{} sentences have shape {} (firsts) and {} (seconds)'
-    logger.debug(msg.format('Training',
+    print(msg.format('Training',
                             train_data.sentences1.shape,
                             train_data.sentences2.shape))
-    logger.debug(msg.format('Validation',
+    print(msg.format('Validation',
                             valid_data.sentences1.shape,
                             valid_data.sentences2.shape))
 
     sess = tf.InteractiveSession()
-    logger.info('Creating model')
+    print('Creating model')
     vocab_size = embeddings.shape[0]
     embedding_size = embeddings.shape[1]
 
@@ -112,11 +111,6 @@ if __name__ == '__main__':
                                            training=True,
                                            project_input=args.no_project,
                                            optimizer=args.optim)
-    # else:
-        # model = LSTMClassifier(args.num_units, 3, vocab_size,
-        #                        embedding_size, training=True,
-        #                        project_input=args.no_project,
-        #                        optimizer=args.optim)
 
     model.initialize(sess, embeddings)
 
@@ -124,9 +118,9 @@ if __name__ == '__main__':
     assert isinstance(model, DecomposableNLIModel)
 
     total_params = utils.count_parameters()
-    logger.debug('Total parameters: %d' % total_params)
+    print('Total parameters: %d' % total_params)
 
-    logger.info('Starting training')
+    print('Starting training')
     model.train(sess, train_data, valid_data, args.save, args.rate,
                 args.num_epochs, args.batch_size, args.dropout, args.l2,
                 args.clip_norm, args.report)
