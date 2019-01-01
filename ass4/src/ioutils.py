@@ -3,10 +3,8 @@
 """
 Functions for reading and writing data to and from files.
 """
-
 import json
 import os
-import logging
 import numpy as np
 import nltk
 from collections import defaultdict
@@ -81,7 +79,7 @@ def load_embeddings(embeddings_path, vocabulary_path=None,
     assert not (generate and load_extra_from), \
         'Either load or generate extra vectors'
 
-    logging.debug('Loading embeddings')
+    print('Loading embeddings')
     if vocabulary_path is None:
         # GloVe file contains both vocabulary and embeddings
         wordlist, embeddings = load_text_embeddings(embeddings_path)
@@ -119,7 +117,7 @@ def load_embeddings(embeddings_path, vocabulary_path=None,
     #     mapping = zip(wordlist, range(0, len(wordlist)))
     #     wd = defaultdict(int, mapping)
 
-    logging.debug('Embeddings have shape {}'.format(embeddings.shape))
+    print('Embeddings have shape {}'.format(embeddings.shape))
     if normalize:
         embeddings = utils.normalize_embeddings(embeddings)
     # wd is a dictionary that maps from word to index
@@ -247,7 +245,7 @@ def read_corpus(filename, lowercase, language='en'):
         TSV format)
     :return: a list of tuples (first_sent, second_sent, label)
     """
-    logging.info('Reading data from %s' % filename)
+    print('Reading data from %s' % filename)
     # we are only interested in the actual sentences + gold label
     # the corpus files has a few more things
     useful_data = []
