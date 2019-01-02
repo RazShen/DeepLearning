@@ -57,9 +57,7 @@ def _generate_random_vector(size):
         return np.random.uniform(-0.1, 0.1, size)
 
 
-def load_embeddings(embeddings_path, vocabulary_path=None,
-                    generate=True, load_extra_from=None,
-                    normalize=True):
+def load_embeddings(embeddings_path):
     """
     Load and return an embedding model in either text format or
     numpy binary format. The text format is used if vocabulary_path
@@ -76,50 +74,27 @@ def load_embeddings(embeddings_path, vocabulary_path=None,
     :param normalize: whether to normalize embeddings
     :return: a tuple (defaultdict, array)
     """
-    assert not (generate and load_extra_from), \
-        'Either load or generate extra vectors'
 
     print('Loading embeddings')
-    if vocabulary_path is None:
-        # GloVe file contains both vocabulary and embeddings
-        wordlist, embeddings = load_text_embeddings(embeddings_path)
-    else:
-        wordlist, embeddings = load_binary_embeddings(embeddings_path,
-                                                      vocabulary_path)
+    wordlist, embeddings = load_text_embeddings(embeddings_path)
 
-    if generate or load_extra_from:
-        # mapping every word to tuple of (word, index) where the indices starts from 3 up to len(wordlist) + 3
-        # saving indices 0-2 for special cases.
-        mapping = zip(wordlist, range(3, len(wordlist) + 3))
+    # mapping every word to tuple of (word, index) where the indices starts from 3 up to len(wordlist) + 3
+    # saving indices 0-2 for special cases.
+    mapping = zip(wordlist, range(3, len(wordlist) + 3))
 
-        # always map OOV words to 0
-        wd = defaultdict(int, mapping)
-        wd[utils.UNKNOWN] = 0
-        wd[utils.PADDING] = 1
-        wd[utils.GO] = 2
-        # geenrating 3 random vectors for unknown, padding, start
-        if generate:
-            vector_size = embeddings.shape[1]
-            extra = [_generate_random_vector(vector_size),
-                     _generate_random_vector(vector_size),
-                     _generate_random_vector(vector_size)]
+    # always map OOV words to 0
+    wd = defaultdict(int, mapping)
+    wd[utils.UNKNOWN] = 0
+    wd[utils.PADDING] = 1
+    wd[utils.START] = 2
+    # generating 3 random vectors for unknown, padding, start
+    vector_size = embeddings.shape[1]
+    extra = [_generate_random_vector(vector_size),
+             _generate_random_vector(vector_size),
+             _generate_random_vector(vector_size)]
 
-        # else:
-        #     path = os.path.join(load_extra_from, 'extra-embeddings.npy')
-        #     extra = np.load(path)
-
-
-        # add those random vectors to the embedded matrix (in indexes 0,1,2)
-        embeddings = np.append(extra, embeddings, 0)
-
-
-    # else:
-    #     mapping = zip(wordlist, range(0, len(wordlist)))
-    #     wd = defaultdict(int, mapping)
-
-    print('Embeddings have shape {}'.format(embeddings.shape))
-    if normalize:
-        embeddings = utils.normalize_embeddings(embeddings)
+    embeddings = np.append(extra, embeddings, 0)
+    embeddings = utils.normalize_embeddings(embeddings)
     # wd is a dictionary that maps from word to index
     return wd, embeddings
 
@@ -235,7 +210,7 @@ def read_alignment(filename, lowercase):
     return sentences
 
 
-def read_corpus(filename, lowercase, language='en'):
+def read_corpus(filename):
     """
     Read a JSONL or TSV file with the SNLI corpus
 
@@ -255,11 +230,10 @@ def read_corpus(filename, lowercase, language='en'):
 
         if filename.endswith('.tsv') or filename.endswith('.txt'):
 
-            tokenize = utils.get_tokenizer(language)
+            tokenize = utils.tokenize_english
             for line in f:
                 line = line.decode('utf-8').strip()
-                if lowercase:
-                    line = line.lower()
+                line = line.lower()
                 sent1, sent2, label = line.split('\t')
                 if label == '-':
                     continue
@@ -269,8 +243,7 @@ def read_corpus(filename, lowercase, language='en'):
         else:
             for line in f:
                 line = line.decode('utf-8')
-                if lowercase:
-                    line = line.lower()
+                line = line.lower()
                 data = json.loads(line)
                 # gold label is the choosing the tag chosen by the majority (if there is one)
                 if data['gold_label'] == '-':

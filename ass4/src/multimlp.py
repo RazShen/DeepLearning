@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import print_function, division
-
 import tensorflow as tf
-
 from decomposable import DecomposableNLIModel, attention_softmax3d
 
 
@@ -16,9 +14,7 @@ class MultiFeedForwardClassifier(DecomposableNLIModel):
     It applies feedforward MLPs to combinations of parts of the two sentences,
     without any recurrent structure.
     """
-    def __init__(self, num_units, num_classes, vocab_size, embedding_size,
-                 training=True, project_input=True, optimizer='adagrad',
-                 use_intra_attention=False, distance_biases=10):
+    def __init__(self, vocab_size, embedding_size):
         """
         Create the model based on MLP networks.
 
@@ -33,12 +29,10 @@ class MultiFeedForwardClassifier(DecomposableNLIModel):
         :param distance_biases: number of different distances with biases used
             in the intra-attention model
         """
-        self.use_intra = use_intra_attention
-        self.distance_biases = distance_biases
-
-        super(MultiFeedForwardClassifier, self).\
-            __init__(num_units, num_classes, vocab_size, embedding_size,
-                     training, project_input, optimizer)
+        self.use_intra = True
+        self.distance_biases = 10
+        size_of_network = 100
+        super(MultiFeedForwardClassifier, self).__init__(size_of_network, vocab_size, embedding_size)
 
     def _transformation_input(self, inputs, reuse_weights=False):
         """
@@ -58,19 +52,8 @@ class MultiFeedForwardClassifier(DecomposableNLIModel):
 
         return transformed
 
-    def _get_params_to_save(self):
-        params = super(MultiFeedForwardClassifier, self)._get_params_to_save()
-        params['use_intra'] = self.use_intra
-        params['distance_biases'] = self.distance_biases
-        return params
 
-    @classmethod
-    def _init_from_load(cls, params, training):
-        return cls(params['num_units'], params['num_classes'],
-                   params['vocab_size'], params['embedding_size'],
-                   project_input=params['project_input'], training=training,
-                   use_intra_attention=params['use_intra'],
-                   distance_biases=params['distance_biases'])
+
 
     def _get_distance_biases(self, time_steps, reuse_weights=False):
         """

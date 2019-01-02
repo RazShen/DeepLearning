@@ -1,13 +1,6 @@
-# -*- coding: utf-8 -*-
-
 import abc
-import json
-import logging
-import os
-
 import tensorflow as tf
 import numpy as np
-
 import utils
 
 
@@ -84,8 +77,7 @@ class DecomposableNLIModel(object):
     """
     abc.__metaclass__ = abc.ABCMeta
 
-    def __init__(self, num_units, num_classes, vocab_size, embedding_size,
-                 training=True, project_input=True, optimizer='adagrad'):
+    def __init__(self, num_units, vocab_size, embedding_size):
         """
         Create the model based on MLP networks.
 
@@ -97,9 +89,10 @@ class DecomposableNLIModel(object):
         :param project_input: whether to project input embeddings to a
             different dimensionality
         """
+
         self.num_units = num_units
-        self.num_classes = num_classes
-        self.project_input = project_input
+        self.num_classes = 3
+        self.project_input = True
 
         """
         Tensorflow placeholder allows us to create our computation graph,
@@ -161,9 +154,7 @@ class DecomposableNLIModel(object):
         l2_partial_sum = sum([tf.nn.l2_loss(weight) for weight in weights_trust])
         l2_loss = tf.multiply(self.l2_constant, l2_partial_sum, 'l2_loss')
         self.loss = tf.add(self.labeled_loss, l2_loss, 'loss')
-
-        if training:
-            self._create_training_tensors(optimizer)
+        self._create_training_tensors()
 
     def _transformation_input(self, inputs, reuse_weights=False):
         """
@@ -181,20 +172,12 @@ class DecomposableNLIModel(object):
 
         return projected
 
-    def _create_training_tensors(self, optimizer_algorithm):
+    def _create_training_tensors(self):
         """
         Create the tensors used for training
         """
         with tf.name_scope('training'):
-            if optimizer_algorithm == 'adagrad':
-                optimizer = tf.train.AdagradOptimizer(self.learning_rate)
-            elif optimizer_algorithm == 'adam':
-                optimizer = tf.train.AdamOptimizer(self.learning_rate)
-            elif optimizer_algorithm == 'adadelta':
-                optimizer = tf.train.AdadeltaOptimizer(self.learning_rate)
-            else:
-                ValueError('Unknown optimizer: %s' % optimizer_algorithm)
-
+            optimizer = tf.train.AdagradOptimizer(self.learning_rate)
             gradients, v = zip(*optimizer.compute_gradients(self.loss))
             if self.clip_value is not None:
                 gradients, _ = tf.clip_by_global_norm(gradients,
@@ -378,6 +361,8 @@ class DecomposableNLIModel(object):
 
         return logits
 
+
+
     def initialize_embeddings(self, session, embeddings):
         """
         Initialize word embeddings
@@ -397,68 +382,7 @@ class DecomposableNLIModel(object):
         init_op = tf.global_variables_initializer()
         session.run(init_op, {self.embeddings_ph: embeddings})
 
-    @classmethod
-    def _init_from_load(cls, params, training):
-        """
-        Call the constructor inside the loader
-        :return: an instance of this class
-        """
-        return cls(params['num_units'], params['num_classes'],
-                   params['vocab_size'], params['embedding_size'],
-                   project_input=params['project_input'], training=training)
 
-    @classmethod
-    def load(cls, dirname, session, training=False):
-        """
-        Load a previously saved file.
-
-        :param dirname: directory with model files
-        :param session: tensorflow session
-        :param training: whether to create training tensors
-        :return: an instance of MultiFeedForward
-        :rtype: DecomposableNLIModel
-        """
-        params = utils.load_parameters(dirname)
-        model = cls._init_from_load(params, training)
-
-        tensorflow_file = os.path.join(dirname, 'model')
-        saver = tf.train.Saver(tf.trainable_variables())
-        saver.restore(session, tensorflow_file)
-
-        # if training, optimizer values still have to be initialized
-        if training:
-            train_vars = [v for v in tf.global_variables()
-                          if v.name.startswith('training')]
-            init_op = tf.variables_initializer(train_vars)
-            session.run(init_op)
-
-        return model
-
-    def _get_params_to_save(self):
-        """
-        Return a dictionary with data for reconstructing a persisted object
-        """
-        vocab_size = self.embeddings.get_shape()[0].value
-        data = {'num_units': self.num_units,
-                'num_classes': self.num_classes,
-                'vocab_size': vocab_size,
-                'embedding_size': self.embedding_size,
-                'project_input': self.project_input}
-
-        return data
-
-    def save(self, dirname, session, saver):
-        """
-        Persist a model's information
-        """
-        params = self._get_params_to_save()
-        tensorflow_file = os.path.join(dirname, 'model')
-        params_file = os.path.join(dirname, 'model-params.json')
-
-        with open(params_file, 'wb') as f:
-            json.dump(params, f)
-
-        saver.save(session, tensorflow_file)
 
     def _create_batch_feed(self, batch_data, learning_rate, dropout_keep,
                            l2, clip_value):
@@ -486,9 +410,7 @@ class DecomposableNLIModel(object):
         loss, acc = session.run([self.loss, self.accuracy], feeds_validation)
         return loss, acc
 
-    def train(self, session, train_dataset, valid_dataset, save_dir,
-              learning_rate, num_epochs, batch_size, dropout_keep=1, l2=0,
-              clip_norm=10, report_interval=1000):
+    def train(self, session, train_dataset, valid_dataset):
         """
         Train the model
 
@@ -505,22 +427,22 @@ class DecomposableNLIModel(object):
         :param report_interval: number of batches before each performance
             report
         """
-        logger = utils.get_logger(self.__class__.__name__)
-
         # this tracks the accumulated loss in a minibatch
         # (to take the average later)
         accumulated_loss = 0
         accumulated_accuracy = 0
         accumulated_num_items = 0
-
+        batch_size = 32
+        epochs = 10
         best_acc = 0
+        learning_rate = 0.05
 
         # batch counter doesn't reset after each epoch
         batch_counter = 0
 
         saver = tf.train.Saver(tf.trainable_variables(), max_to_keep=1)
 
-        for i in range(num_epochs):
+        for i in range(epochs):
             train_dataset.shuffle_data()
             batch_index = 0
             """
@@ -536,7 +458,7 @@ class DecomposableNLIModel(object):
                 Batch here is of class RTEDataset. already a subset of train_dataset
                 """
                 feeds_for_valid = self._create_batch_feed(batch, learning_rate,
-                                                dropout_keep, l2, clip_norm)
+                                                0.8, 0.0, 100)
 
                 ops = [self.train_optimizer, self.loss, self.accuracy]
                 _, loss, accuracy = session.run(ops, feed_dict=feeds_for_valid)
@@ -547,7 +469,7 @@ class DecomposableNLIModel(object):
                 batch_index = batch_index2
                 batch_counter += 1
 
-                if batch_counter % report_interval == 0:
+                if batch_counter % 100 == 0:
                     """
                     avg_loss is the loss of all the batches seen so far.
                     """
@@ -558,7 +480,7 @@ class DecomposableNLIModel(object):
                     accumulated_num_items = 0
 
                     feeds_for_valid = self._create_batch_feed(valid_dataset,
-                                                    0, 1, l2, 0)
+                                                    0, 1, 0.0, 0)
 
                     valid_loss, valid_acc = self._run_on_validation(session,
                                                                     feeds_for_valid)
@@ -571,56 +493,5 @@ class DecomposableNLIModel(object):
 
                     if valid_acc > best_acc:
                         best_acc = valid_acc
-                        self.save(save_dir, session, saver)
-                        msg += '\t(saved model)'
+                    print(msg)
 
-                    logger.info(msg)
-
-    # def evaluate(self, session, dataset, return_answers, batch_size=5000):
-    #     """
-    #     Run the model on the given dataset
-    #
-    #     :param session: tensorflow session
-    #     :param dataset: the dataset object
-    #     :type dataset: utils.RTEDataset
-    #     :param return_answers: if True, also return the answers
-    #     :param batch_size: how many items to run at a time. Relevant if you're
-    #         evaluating the train set performance
-    #     :return: if not return_answers, a tuple (loss, accuracy)
-    #         or else (loss, accuracy, answers)
-    #     """
-    #     if return_answers:
-    #         ops = [self.loss, self.accuracy, self.answer]
-    #     else:
-    #         ops = [self.loss, self.accuracy]
-    #
-    #     i = 0
-    #     j = batch_size
-    #     # store accuracies and losses weighted by the number of items in the
-    #     # batch to take the correct average in the end
-    #     weighted_accuracies = []
-    #     weighted_losses = []
-    #     answers = []
-    #     while i < dataset.num_items:
-    #         subset = dataset.get_batch(i, j)
-    #
-    #         last = i + subset.num_items
-    #         logging.debug('Evaluating items between %d and %d' % (i, last))
-    #         i = j
-    #         j += batch_size
-    #
-    #         feeds = self._create_batch_feed(subset, 0, 1, 0, 0)
-    #         results = session.run(ops, feeds)
-    #         weighted_losses.append(results[0] * subset.num_items)
-    #         weighted_accuracies.append(results[1] * subset.num_items)
-    #         if return_answers:
-    #             answers.append(results[2])
-    #
-    #     avg_accuracy = np.sum(weighted_accuracies) / dataset.num_items
-    #     avg_loss = np.sum(weighted_losses) / dataset.num_items
-    #     ret = [avg_loss, avg_accuracy]
-    #     if return_answers:
-    #         all_answers = np.concatenate(answers)
-    #         ret.append(all_answers)
-    #
-    #     return ret

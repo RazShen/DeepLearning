@@ -12,13 +12,14 @@ import numpy as np
 import tensorflow as tf
 from collections import Counter
 from nltk.tokenize.regexp import RegexpTokenizer
-
-import classifiers
+from decomposable import DecomposableNLIModel
+from multimlp import MultiFeedForwardClassifier
 
 tokenizer = nltk.tokenize.TreebankWordTokenizer()
+
 UNKNOWN = '**UNK**'
 PADDING = '**PAD**'
-GO = '**GO**'  # it's called "GO" but actually serves as a null alignment
+START = '**START**'  # it's called "START" but actually serves as a null alignment
 
 
 class RTEDataset(object):
@@ -74,19 +75,7 @@ class RTEDataset(object):
         return subset
 
 
-def get_tokenizer(language):
-    """
-    Return the tokenizer function according to the language.
-    """
-    language = language.lower()
-    if language == 'en':
-        tokenize = tokenize_english
-    elif language == 'pt':
-        tokenize = tokenize_portuguese
-    else:
-        ValueError('Unsupported language: %s' % language)
 
-    return tokenize
 
 
 def tokenize_english(text):
@@ -141,20 +130,6 @@ def tokenize_corpus(pairs):
     return tokenized_pairs
 
 
-def count_parameters():
-    """
-    Count the number of trainable tensorflow parameters loaded in
-    the current graph.
-    """
-    total_params = 0
-    for variable in tf.trainable_variables():
-        shape = variable.get_shape()
-        variable_params = 1
-        for dim in shape:
-            variable_params *= dim.value
-        print('%s: %d params' % (variable.name, variable_params))
-        total_params += variable_params
-    return total_params
 
 
 def count_corpus_tokens(pairs):
@@ -192,12 +167,10 @@ def get_model_class(params):
     :param params: saved parameter dictionary
     :return: a subclass of classifiers.DecomposableNLIModel
     """
-    if params.get('model') == 'lstm':
-        model_class = classifiers.LSTMClassifier
-    else:
-        model_class = classifiers.MultiFeedForwardClassifier
 
-    assert issubclass(model_class, classifiers.DecomposableNLIModel)
+    model_class = MultiFeedForwardClassifier
+
+    assert issubclass(model_class, DecomposableNLIModel)
     return model_class
 
 
@@ -287,7 +260,7 @@ def _convert_pairs_to_indices(sentences, word_dict, max_len=None,
         indices = [word_dict[token] for token in sent]
 
         if use_null:
-            indices = [word_dict[GO]] + indices
+            indices = [word_dict[START]] + indices
 
         array[i, :len(indices)] = indices
 
