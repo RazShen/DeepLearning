@@ -1,25 +1,23 @@
 from __future__ import division, print_function
 import tensorflow as tf
-import ioutils
 import utils
-from multimlp import MultiFeedForwardClassifier
+from SNLIModel import SNLIModel
+
 
 def main():
     embedding_file = "glove.6B.200d.txt"
     train_file = "snli_1.0/snli_1.0_train.jsonl"
     validation_file = "snli_1.0/snli_1.0_dev.jsonl"
-    save_path = "saved_model"
-    hidden_units = 100
 
     # train pairs is the list of tuples ([sentence1 words], [sentence2 words], label)
-    train_pairs = ioutils.read_corpus(train_file)
     # validation pairs is the list of tuples ([sentence1 words], [sentence2 words], label)
-    valid_pairs = ioutils.read_corpus(validation_file)
+
+    train_pairs, valid_pairs = utils.read_corpuses(train_file, validation_file)
 
     # whether to generate embeddings for unknown, padding, null
     # word_dict is a dictionary of words and indices and embeddings matrix is a matrix where its indices are the
     # vector for the word...
-    word_dict, embeddings = ioutils.load_embeddings(embedding_file)
+    word_dict, embeddings = utils.load_embeddings(embedding_file)
 
     print('Converting words to indices')
     # find out which labels are there in the data
@@ -33,8 +31,8 @@ def main():
     print('Creating model')
     vocab_size = embeddings.shape[0]
     embedding_size = embeddings.shape[1]
-
-    model = MultiFeedForwardClassifier(vocab_size, embedding_size)
+    size_of_network = 100
+    model = SNLIModel(size_of_network, vocab_size, embedding_size)
 
     model.initialize(sess, embeddings)
     print('Starting training')

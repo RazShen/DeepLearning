@@ -2,6 +2,8 @@ import abc
 import tensorflow as tf
 import numpy as np
 import utils
+import matplotlib.pyplot as plt
+from matplotlib.legend_handler import HandlerLine2D
 
 
 def attention_softmax3d(values):
@@ -70,11 +72,8 @@ def mask_3d(values, sentence_sizes, mask_value, dimension=2):
     return masked
 
 
+class SNLIModel(object):
 
-class DecomposableNLIModel(object):
-    """
-    Base abstract class for decomposable NLI models
-    """
     abc.__metaclass__ = abc.ABCMeta
 
     def __init__(self, num_units, vocab_size, embedding_size):
@@ -89,7 +88,8 @@ class DecomposableNLIModel(object):
         :param project_input: whether to project input embeddings to a
             different dimensionality
         """
-
+        self.use_intra = True
+        self.distance_biases = 10
         self.num_units = num_units
         self.num_classes = 3
         self.project_input = True
@@ -163,14 +163,72 @@ class DecomposableNLIModel(object):
         :param inputs: a tensor with shape (batch, time_steps, embeddings)
         :return: a tensor of the same shape of the input
         """
-        if self.project_input:
-            projected = self.project_embeddings(inputs, reuse_weights)
-            self.representation_size = self.num_units
-        else:
-            projected = inputs
-            self.representation_size = self.embedding_size
+        projected = self.project_embeddings(inputs, reuse_weights)
+        self.representation_size = self.num_units
+        if self.use_intra:
+            # here, repr's have shape (batch , time_steps, 2*num_units)
+            transformed = self.compute_intra_attention(projected,
+                                                       reuse_weights)
+            self.representation_size *= 2
 
-        return projected
+        return transformed
+
+    def _get_distance_biases(self, time_steps, reuse_weights=False):
+        """
+        Return a 2-d tensor with the values of the distance biases to be applied
+        on the intra-attention matrix of size sentence_size
+
+        :param time_steps: tensor scalar
+        :return: 2-d tensor (time_steps, time_steps)
+        """
+        with tf.variable_scope('distance-bias', reuse=reuse_weights):
+            # this is d_{i-j}
+            distance_bias = tf.get_variable('dist_bias', [self.distance_biases],
+                                            initializer=tf.zeros_initializer())
+
+            # messy tensor manipulation for indexing the biases
+            r = tf.range(0, time_steps)
+            r_matrix = tf.tile(tf.reshape(r, [1, -1]),
+                               tf.stack([time_steps, 1]))
+            raw_inds = r_matrix - tf.reshape(r, [-1, 1])
+            clipped_inds = tf.clip_by_value(raw_inds, 0,
+                                            self.distance_biases - 1)
+            values = tf.nn.embedding_lookup(distance_bias, clipped_inds)
+
+        return values
+
+    def compute_intra_attention(self, sentence, reuse_weights=False):
+        """
+        Compute the intra attention of a sentence. It returns a concatenation
+        of the original sentence with its attended output.
+
+        :param sentence: tensor in shape (batch, time_steps, num_units)
+        :return: a tensor in shape (batch, time_steps, 2*num_units)
+        """
+        time_steps = tf.shape(sentence)[1]
+        with tf.variable_scope('intra-attention') as scope:
+            # this is F_intra in the paper
+            # f_intra1 is (batch, time_steps, num_units) and
+            # f_intra1_t is (batch, num_units, time_steps)
+            f_intra = self._apply_feedforward(sentence, scope,
+                                              reuse_weights=reuse_weights)
+            f_intra_t = tf.transpose(f_intra, [0, 2, 1])
+
+            # these are f_ij
+            # raw_attentions is (batch, time_steps, time_steps)
+            raw_attentions = tf.matmul(f_intra, f_intra_t)
+
+            # bias has shape (time_steps, time_steps)
+            with tf.device('/cpu:0'):
+                bias = self._get_distance_biases(time_steps,
+                                                 reuse_weights=reuse_weights)
+
+            # bias is broadcast along batches
+            raw_attentions += bias
+            attentions = attention_softmax3d(raw_attentions)
+            attended = tf.matmul(attentions, sentence)
+
+        return tf.concat(axis=2, values=[sentence, attended])
 
     def _create_training_tensors(self):
         """
@@ -214,11 +272,35 @@ class DecomposableNLIModel(object):
 
     def _transformation_compare(self, sentence, num_units, length,
                                 reuse_weights=False):
-        raise NotImplementedError()
+        """
+        Apply the transformation on each attended token before comparing.
+        In the original model, it is a two layer feed forward network.
+
+        :param sentence: a tensor with shape (batch, time_steps, num_units)
+        :param num_units: a python int indicating the third dimension of
+            sentence
+        :param length: real length of the sentence. Not used in this class.
+        :param reuse_weights: whether to reuse weights inside this scope
+        :return: a tensor with shape (batch, time_steps, num_units)
+        """
+        return self._apply_feedforward(sentence, self.compare_scope,
+                                       reuse_weights)
 
     def _transformation_attend(self, sentence, num_units, length,
                                reuse_weights=False):
-        raise NotImplementedError()
+        """
+        Apply the transformation on each sentence before attending over each
+        other. In the original model, it is a two layer feed forward network.
+
+        :param sentence: a tensor with shape (batch, time_steps, num_units)
+        :param num_units: a python int indicating the third dimension of
+            sentence
+        :param length: real length of the sentence. Not used in this class.
+        :param reuse_weights: whether to reuse weights inside this scope
+        :return: a tensor with shape (batch, time_steps, num_units)
+        """
+        return self._apply_feedforward(sentence, self.attend_scope,
+                                       reuse_weights)
 
     def _apply_feedforward(self, inputs, scope,
                            reuse_weights=False, initializer=None,
@@ -331,8 +413,7 @@ class DecomposableNLIModel(object):
                       sentence * soft_alignment]
             sent_and_alignment = tf.concat(axis=2, values=inputs)
 
-            output = self._transformation_compare(
-                sent_and_alignment, num_units, sentence_length, reuse_weights)
+            output = self._transformation_compare(sent_and_alignment, num_units, sentence_length, reuse_weights)
 
         return output
 
@@ -361,8 +442,6 @@ class DecomposableNLIModel(object):
 
         return logits
 
-
-
     def initialize_embeddings(self, session, embeddings):
         """
         Initialize word embeddings
@@ -381,8 +460,6 @@ class DecomposableNLIModel(object):
         """
         init_op = tf.global_variables_initializer()
         session.run(init_op, {self.embeddings_ph: embeddings})
-
-
 
     def _create_batch_feed(self, batch_data, learning_rate, dropout_keep,
                            l2, clip_value):
@@ -413,7 +490,6 @@ class DecomposableNLIModel(object):
     def train(self, session, train_dataset, valid_dataset):
         """
         Train the model
-
         :param session: tensorflow session
         :type train_dataset: utils.RTEDataset
         :type valid_dataset: utils.RTEDataset
@@ -433,14 +509,18 @@ class DecomposableNLIModel(object):
         accumulated_accuracy = 0
         accumulated_num_items = 0
         batch_size = 32
-        epochs = 10
+        epochs = 1
         best_acc = 0
         learning_rate = 0.05
 
         # batch counter doesn't reset after each epoch
         batch_counter = 0
+        acc_train_dict = {}
+        loss_train_dict = {}
+        acc_validation_dict = {}
+        loss_validation_dict = {}
+        dicts_index = 0
 
-        saver = tf.train.Saver(tf.trainable_variables(), max_to_keep=1)
 
         for i in range(epochs):
             train_dataset.shuffle_data()
@@ -458,7 +538,7 @@ class DecomposableNLIModel(object):
                 Batch here is of class RTEDataset. already a subset of train_dataset
                 """
                 feeds_for_valid = self._create_batch_feed(batch, learning_rate,
-                                                0.8, 0.0, 100)
+                                                          0.8, 0.0, 100)
 
                 ops = [self.train_optimizer, self.loss, self.accuracy]
                 _, loss, accuracy = session.run(ops, feed_dict=feeds_for_valid)
@@ -480,7 +560,7 @@ class DecomposableNLIModel(object):
                     accumulated_num_items = 0
 
                     feeds_for_valid = self._create_batch_feed(valid_dataset,
-                                                    0, 1, 0.0, 0)
+                                                              0, 1, 0.0, 0)
 
                     valid_loss, valid_acc = self._run_on_validation(session,
                                                                     feeds_for_valid)
@@ -495,3 +575,25 @@ class DecomposableNLIModel(object):
                         best_acc = valid_acc
                     print(msg)
 
+                    acc_train_dict[dicts_index] = avg_accuracy
+                    loss_train_dict[dicts_index] = avg_loss
+                    acc_validation_dict[dicts_index] = valid_acc
+                    loss_validation_dict[dicts_index] = valid_loss
+                    dicts_index += 1
+
+            self.plot_graphs(acc_train_dict, loss_train_dict, acc_validation_dict, loss_validation_dict)
+
+    def plot_graphs(self, acc_train_dict, loss_train_dict, acc_validation_dict, loss_validation_dict):
+        # accuracy graph
+        label1, = plt.plot(acc_train_dict.keys(), acc_train_dict.values(), "b-", label='Train Avg. Accuracy')
+        label2, = plt.plot(acc_validation_dict.keys(), acc_validation_dict.values(), "r-",
+                           label='Validation Avg. Accuracy')
+        plt.legend(handler_map={label1: HandlerLine2D(numpoints=4)})
+        plt.show()
+
+        # loss graph
+        label1, = plt.plot(loss_train_dict.keys(), loss_train_dict.values(), "b-", label='Train Avg. Loss')
+        label2, = plt.plot(loss_validation_dict.keys(), loss_validation_dict.values(), "r-",
+                           label='Validation Avg. Loss')
+        plt.legend(handler_map={label1: HandlerLine2D(numpoints=4)})
+        plt.show()
