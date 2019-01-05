@@ -102,9 +102,7 @@ class SNLIModel(object):
         # we have to supply the vocab size to allow validate_shape on the
         # embeddings variable, which is necessary down in the graph to determine
         # the shape of inputs at graph construction time
-        self.embeddings_ph = tf.placeholder(tf.float32, (vocab_size,
-                                                         embedding_size),
-                                            'embeddings')
+        self.embeddings_ph = tf.placeholder(tf.float32, (vocab_size, embedding_size),'embeddings')
         # sentence plaholders have shape (batch, time_steps)
         self.sentence1 = tf.placeholder(tf.int32, (None, None), 'sentence1')
         self.sentence2 = tf.placeholder(tf.int32, (None, None), 'sentence2')
@@ -509,7 +507,7 @@ class SNLIModel(object):
         accumulated_accuracy = 0
         accumulated_num_items = 0
         batch_size = 32
-        epochs = 1
+        epochs = 10
         best_acc = 0
         learning_rate = 0.05
 
@@ -565,11 +563,11 @@ class SNLIModel(object):
                     valid_loss, valid_acc = self._run_on_validation(session,
                                                                     feeds_for_valid)
 
-                    msg = '%d completed epochs, %d batches' % (i, batch_counter)
-                    msg += '\tAvg train loss: %f' % avg_loss
-                    msg += '\tAvg train acc: %.4f' % avg_accuracy
-                    msg += '\tValidation loss: %f' % valid_loss
-                    msg += '\tValidation acc: %.4f' % valid_acc
+                    msg = '%d completed epochs, %d batches' % (i+1, batch_counter)
+                    msg += '\tTrain loss: %.4f' % avg_loss
+                    msg += '\tTrain acc: %.4f' % (avg_accuracy * 100)
+                    msg += '\tTest loss: %.4f' % valid_loss
+                    msg += '\tTest acc: %.4f' % (valid_acc * 100)
 
                     if valid_acc > best_acc:
                         best_acc = valid_acc
@@ -587,13 +585,13 @@ class SNLIModel(object):
         # accuracy graph
         label1, = plt.plot(acc_train_dict.keys(), acc_train_dict.values(), "b-", label='Train Avg. Accuracy')
         label2, = plt.plot(acc_validation_dict.keys(), acc_validation_dict.values(), "r-",
-                           label='Validation Avg. Accuracy')
+                           label='Test Avg. Accuracy')
         plt.legend(handler_map={label1: HandlerLine2D(numpoints=4)})
         plt.show()
 
         # loss graph
         label1, = plt.plot(loss_train_dict.keys(), loss_train_dict.values(), "b-", label='Train Avg. Loss')
         label2, = plt.plot(loss_validation_dict.keys(), loss_validation_dict.values(), "r-",
-                           label='Validation Avg. Loss')
+                           label='Test Avg. Loss')
         plt.legend(handler_map={label1: HandlerLine2D(numpoints=4)})
         plt.show()

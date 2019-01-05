@@ -501,8 +501,8 @@ def read_alignment(filename, lowercase):
     return sentences
 
 
-def read_corpuses(train_file, dev_file):
-    return read_corpus(train_file), read_corpus(dev_file)
+def read_corpuses(train_file, test_file):
+    return read_corpus(train_file), read_corpus(test_file)
 
 
 def read_corpus(filename):

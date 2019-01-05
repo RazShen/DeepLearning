@@ -7,12 +7,12 @@ from SNLIModel import SNLIModel
 def main():
     embedding_file = "glove.6B.200d.txt"
     train_file = "snli_1.0/snli_1.0_train.jsonl"
-    validation_file = "snli_1.0/snli_1.0_dev.jsonl"
+    test_file = "snli_1.0/snli_1.0_test.jsonl"
 
     # train pairs is the list of tuples ([sentence1 words], [sentence2 words], label)
     # validation pairs is the list of tuples ([sentence1 words], [sentence2 words], label)
 
-    train_pairs, valid_pairs = utils.read_corpuses(train_file, validation_file)
+    train_pairs, test_pairs = utils.read_corpuses(train_file, test_file)
 
     # whether to generate embeddings for unknown, padding, null
     # word_dict is a dictionary of words and indices and embeddings matrix is a matrix where its indices are the
@@ -25,7 +25,7 @@ def main():
     label_dict = utils.create_label_dict(train_pairs)  # create dictionary of the labels and their index
     # train_pairs is list of tuples, where each tuple is ([sentence1 words], [sentence2 words], label).
     train_data = utils.create_dataset(train_pairs, word_dict, label_dict)
-    valid_data = utils.create_dataset(valid_pairs, word_dict, label_dict)
+    test_data = utils.create_dataset(test_pairs, word_dict, label_dict)
 
     sess = tf.InteractiveSession()
     print('Creating model')
@@ -36,7 +36,7 @@ def main():
 
     model.initialize(sess, embeddings)
     print('Starting training')
-    model.train(sess, train_data, valid_data)
+    model.train(sess, train_data, test_data)
 
 
 if __name__ == '__main__':

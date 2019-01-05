@@ -18,3 +18,16 @@ Obtain the Data:
         (if not, download it manually from https://nlp.stanford.edu/projects/snli/snli_1.0.zip)
 
 Run the model:
+    step 1) First make sure that in the running folder there are the files:
+        1) ass_4_snli.py
+        2) SNLIModel.py
+        3) utils.py
+        4) glove.6B.200d.txt
+        5) snli_1.0 folder with its files as described above.
+
+    step 2) Run the model:
+
+        python ass_4_snli.py
+
+    While the model is running you can see the results per each 100 batches,
+    after the model has finished learning 2 graphs with the learning curves will be printed.
