@@ -30,4 +30,4 @@ Run the model:
         python ass_4_snli.py
 
     While the model is running you can see the results per each 100 batches,
-    after the model has finished learning 2 graphs with the learning curves will be printed.
+    after the model has finished learning graphs with the learning curves per epoch will be printed.
