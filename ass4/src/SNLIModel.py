@@ -69,19 +69,11 @@ class SNLIModel(object):
 
     def __init__(self, num_units, vocab_size, embedding_size):
         """
-<<<<<<< HEAD
-        constructor.
-        creates the model.
-        :param num_units: hidden dim.
-        :param vocab_size: as its name.
-        :param embedding_size: embedding dim.
-=======
         Create the model based on MLP networks.
 
         :param num_units: main dimension of the internal networks
         :param vocab_size: size of the vocabulary
         :param embedding_size: size of each word embedding
->>>>>>> e912f61c3e14bafb2450e2145be1ba160bf873e2
         """
         self.use_intra = True
         self.distance_biases = 10
@@ -93,16 +85,12 @@ class SNLIModel(object):
         Tensorflow placeholder allows us to create our computation graph,
         without needing the data right away. 
         """
-<<<<<<< HEAD
-        self.embeddings_ph = tf.placeholder(tf.float32, (vocab_size, embedding_size), 'embeddings')
-=======
 
         # we have to supply the vocab size to allow validate_shape on the
         # embeddings variable, which is necessary down in the graph to determine
         # the shape of inputs at graph construction time
         self.embeddings_ph = tf.placeholder(tf.float32, (vocab_size, embedding_size), 'embeddings')
         # sentence plaholders have shape (batch, time_steps)
->>>>>>> e912f61c3e14bafb2450e2145be1ba160bf873e2
         self.sen1 = tf.placeholder(tf.int32, (None, None), 'sentence1')
         self.sen2 = tf.placeholder(tf.int32, (None, None), 'sentence2')
         self.sen1_len = tf.placeholder(tf.int32, [None], 'sent1_size')
@@ -113,11 +101,8 @@ class SNLIModel(object):
         self.clipping_val = tf.placeholder(tf.float32, [], 'clip_norm')
         self.dropout_keep_percentage = tf.placeholder(tf.float32, [], 'dropout')
         self.embed_size = embedding_size
-<<<<<<< HEAD
-=======
         # we initialize the embeddings from a placeholder to circumvent
         # tensorflow's limitation of 2 GB nodes in the graph
->>>>>>> e912f61c3e14bafb2450e2145be1ba160bf873e2
         """
         Variable allows to keep object as equation, until we create the computation graph.
         """
@@ -135,20 +120,13 @@ class SNLIModel(object):
         embed2 = tf.nn.embedding_lookup(self.E, clipped_sen2)
         rep1 = self.transform_input(embed1)
         rep2 = self.transform_input(embed2, True)
-<<<<<<< HEAD
-=======
         # the architecture has 3 main steps: soft align, compare and aggregate
         # alpha and beta have shape (batch, time_steps, embeddings)
->>>>>>> e912f61c3e14bafb2450e2145be1ba160bf873e2
         self.alpha, self.beta = self.attend_step(rep1, rep2)
         self.V1 = self.compare_with_soft_alignment(rep1, self.beta)
         self.V2 = self.compare_with_soft_alignment(rep2, self.alpha, True)
         self.aggregated_v1_v2 = self.aggregate_v_representations(self.V1, self.V2)
         self.prediction = tf.argmax(self.aggregated_v1_v2, 1, 'answer')
-<<<<<<< HEAD
-=======
-
->>>>>>> e912f61c3e14bafb2450e2145be1ba160bf873e2
         hits = tf.equal(tf.cast(self.prediction, tf.int32), self.label)
         self.acc = tf.reduce_mean(tf.cast(hits, tf.float32),
                                   name='accuracy')
@@ -162,27 +140,16 @@ class SNLIModel(object):
 
     def transform_input(self, inputs, reuse_weights=False):
         """
-<<<<<<< HEAD
-        transform_input function.
-        operate transformations on the embeddings.
-        :param inputs: a tensor batch X time_steps X embeddings)
-        :param reuse_weights: indicates whther to reuse wights.
-        :return: tensor
-=======
         Apply any transformations to the input embeddings
 
         :param inputs: a tensor with shape (batch, time_steps, embeddings)
         :param reuse_weights: if to reuse weights or not
         :return: a tensor of the same shape of the input
->>>>>>> e912f61c3e14bafb2450e2145be1ba160bf873e2
         """
         project_embed = self.project_embeddings(inputs, reuse_weights)
         self.representation_size = self.num_units
         if self.use_intra:
-<<<<<<< HEAD
-=======
             # here, repr's have shape (batch , time_steps, 2*num_units)
->>>>>>> e912f61c3e14bafb2450e2145be1ba160bf873e2
             transformed_embed = self.get_intra_attention_of_sentence(project_embed, reuse_weights)
             self.representation_size = self.representation_size * 2
 
@@ -211,12 +178,6 @@ class SNLIModel(object):
         """
         time_steps = tf.shape(sentence)[1]
         with tf.variable_scope('intra-attention') as scope:
-<<<<<<< HEAD
-            f_intra_of_sen = self.apply_two_feed_forward_layers(sentence, scope, reuse_weights=reuse_weights)
-            f_intra_transpose = tf.transpose(f_intra_of_sen, [0, 2, 1])
-            with tf.device('/cpu:0'):
-                bias = self.get_distance_biases_for_intra_attendtion(time_steps, reuse_weights=reuse_weights)
-=======
             # this is F_intra in the paper
             # f_intra1 is (batch, time_steps, num_units) and
             # f_intra1_t is (batch, num_units, time_steps)
@@ -231,7 +192,6 @@ class SNLIModel(object):
                 bias = self.get_distance_biases_for_intra_attendtion(time_steps, reuse_weights=reuse_weights)
 
             # bias is broadcast along batches
->>>>>>> e912f61c3e14bafb2450e2145be1ba160bf873e2
             attentions = softmax_attention_3d(tf.matmul(f_intra_of_sen, f_intra_transpose) + bias)
             attended = tf.matmul(attentions, sentence)
         return tf.concat(axis=2, values=[sentence, attended])
@@ -275,34 +235,17 @@ class SNLIModel(object):
 
     def apply_tranformation_before_comparing(self, sentence, reuse_weights=False):
         """
-<<<<<<< HEAD
-        apply_tranformation_before_comparing function.
-        operates transformation on the attended tokens before the comparing operation.
-        :param sentence: sentence represented by tensor.
-        :param reuse_weights: indicates whether to reuse weights
-        :return: tensor
-=======
         Apply the transformation on each attended token before comparing.
         In the original model, it is a two layer feed forward network.
 
         :param sentence: a tensor with shape (batch, time_steps, num_units)
         :param reuse_weights: whether to reuse weights inside this scope
         :return: a tensor with shape (batch, time_steps, num_units)
->>>>>>> e912f61c3e14bafb2450e2145be1ba160bf873e2
         """
         return self.apply_two_feed_forward_layers(sentence, self.compare_scope, reuse_weights)
 
     def apploy_transformation_before_attending(self, sentence, reuse_weights=False):
         """
-<<<<<<< HEAD
-        apploy_transformation_before_attending function.
-        operates transformation on the sentences before the attending phase.
-        :param sentence: sentence represented by tensor
-        :param num_units: integer indicates the third dim of sentence
-        :param length: originallen of sentence.
-        :param reuse_weights: indicates if we are reusing the weights
-        :return: tensor
-=======
         Apply the transformation on each sentence before attending over each
         other. In the original model, it is a two layer feed forward network.
 
@@ -312,21 +255,11 @@ class SNLIModel(object):
         :param length: real length of the sentence. Not used in this class.
         :param reuse_weights: whether to reuse weights inside this scope
         :return: a tensor with shape (batch, time_steps, num_units)
->>>>>>> e912f61c3e14bafb2450e2145be1ba160bf873e2
         """
         return self.apply_two_feed_forward_layers(sentence, self.attend_scope, reuse_weights)
 
     def apply_two_feed_forward_layers(self, inputs, scope, reuse_weights=False):
         """
-<<<<<<< HEAD
-        apply_two_feed_forward_layers function.
-        operates two feed forward layers.
-        :param inputs: tensor
-        :param reuse_weights: boolean param - whether to reuse weights
-        :param initializer: a tensorflow initializer
-        :param num_units: hidden layer dim
-        :return: tensor.
-=======
         Apply two feed forward layers with self.num_units on the inputs.
         :param inputs: tensor in shape (batch, time_steps, num_input_units)
             or (batch, num_units)
@@ -337,7 +270,6 @@ class SNLIModel(object):
         :param num_units: list of length 2 containing the number of units to be
             used in each layer
         :return: a tensor with shape (batch, time_steps, num_units)
->>>>>>> e912f61c3e14bafb2450e2145be1ba160bf873e2
         """
         num_units = [self.num_units, self.num_units]
         scope = scope or 'feedforward'
@@ -345,17 +277,11 @@ class SNLIModel(object):
             with tf.variable_scope('layer1'):
                 inputs = tf.nn.dropout(inputs, self.dropout_keep_percentage)
                 relus1 = tf.layers.dense(inputs, num_units[0], tf.nn.relu, kernel_initializer=None)
-<<<<<<< HEAD
-            with tf.variable_scope('layer2'):
-                inputs = tf.nn.dropout(relus1, self.dropout_keep_percentage)
-                relus2 = tf.layers.dense(inputs, num_units[1], tf.nn.relu, kernel_initializer=None)
-=======
 
             with tf.variable_scope('layer2'):
                 inputs = tf.nn.dropout(relus1, self.dropout_keep_percentage)
                 relus2 = tf.layers.dense(inputs, num_units[1], tf.nn.relu, kernel_initializer=None)
 
->>>>>>> e912f61c3e14bafb2450e2145be1ba160bf873e2
         return relus2
 
     def aggregate_input(self, v1, v2):
@@ -364,10 +290,7 @@ class SNLIModel(object):
         operates the aggregate operation as it was explained in the report.
         params and return vals are all tensors.
         """
-<<<<<<< HEAD
-=======
         # sum over time steps; resulting shape is (batch, num_units)
->>>>>>> e912f61c3e14bafb2450e2145be1ba160bf873e2
         v1 = get_3d_max_of_martix_batch(v1, self.sen1_len, 0, 1)
         v2 = get_3d_max_of_martix_batch(v2, self.sen2_len, 0, 1)
         v1_sum = tf.reduce_sum(v1, 1)
@@ -384,23 +307,13 @@ class SNLIModel(object):
         params and return vals are all tensors.
         """
         with tf.variable_scope('inter-attention') as self.attend_scope:
-<<<<<<< HEAD
-=======
             # this is F in the paper
             # repr1 has shape (batch, time_steps, num_units)
             # repr2 has shape (batch, num_units, time_steps)
->>>>>>> e912f61c3e14bafb2450e2145be1ba160bf873e2
             repr1 = self.apploy_transformation_before_attending(sent1)
             repr2 = self.apploy_transformation_before_attending(sent2, True)
             repr2 = tf.transpose(repr2, [0, 2, 1])
             self.raw_attentions = tf.matmul(repr1, repr2)
-<<<<<<< HEAD
-            masked_vals = get_3d_max_of_martix_batch(self.raw_attentions, self.sen2_len, -np.inf)
-            att_sen1 = softmax_attention_3d(masked_vals)
-            att_transposed = tf.transpose(self.raw_attentions, [0, 2, 1])
-            masked_vals = get_3d_max_of_martix_batch(att_transposed, self.sen1_len, -np.inf)
-            att_sen2 = softmax_attention_3d(masked_vals)
-=======
 
             # now get the attention softmaxes
             masked_vals = get_3d_max_of_martix_batch(self.raw_attentions, self.sen2_len, -np.inf)
@@ -410,15 +323,10 @@ class SNLIModel(object):
             masked_vals = get_3d_max_of_martix_batch(att_transposed, self.sen1_len, -np.inf)
             att_sen2 = softmax_attention_3d(masked_vals)
 
->>>>>>> e912f61c3e14bafb2450e2145be1ba160bf873e2
             self.inter_att1 = att_sen1
             self.inter_att2 = att_sen2
             alpha = tf.matmul(att_sen2, sent1, name='alpha')
             beta = tf.matmul(att_sen1, sent2, name='beta')
-<<<<<<< HEAD
-=======
-
->>>>>>> e912f61c3e14bafb2450e2145be1ba160bf873e2
         return alpha, beta
 
     def compare_with_soft_alignment(self, sentence, soft_alignment, reuse_weights=False):
@@ -432,10 +340,7 @@ class SNLIModel(object):
         :return: tensor
         """
         with tf.variable_scope('comparison', reuse=reuse_weights) as self.compare_scope:
-<<<<<<< HEAD
-=======
             # sent_and_alignment has shape (batch, time_steps, num_units)
->>>>>>> e912f61c3e14bafb2450e2145be1ba160bf873e2
             sent_and_alignment = tf.concat(axis=2, values=[sentence, soft_alignment, sentence - soft_alignment,
                                                            sentence * soft_alignment])
             output = self.apply_tranformation_before_comparing(sent_and_alignment, reuse_weights)
@@ -443,17 +348,12 @@ class SNLIModel(object):
 
     def aggregate_v_representations(self, V1, V2):
         """
-<<<<<<< HEAD
-        aggregate_v_representations function.
-        params are tensors.
-=======
         Aggregate the representations induced from both sentences and their
         representations
 
         :param V1: tensor with shape (batch, time_steps, num_units)
         :param v2: tensor with shape (batch, time_steps, num_units)
         :return: logits over classes, shape (batch, num_classes)
->>>>>>> e912f61c3e14bafb2450e2145be1ba160bf873e2
         """
         inputs = self.aggregate_input(V1, V2)
         with tf.variable_scope('aggregation') as self.aggregate_scope:
@@ -495,14 +395,6 @@ class SNLIModel(object):
 
     def train(self, session, train_dataset, valid_dataset):
         """
-<<<<<<< HEAD
-        train function.
-        main loop traines the model and export graphs and accuracy
-        :param session: tf session
-        :type train_dataset: the train dataset
-        :type valid_dataset: the dev dataset
-        """
-=======
         Train the model
         :param session: tensorflow session
         :type train_dataset: utils.DatasetComparison
@@ -510,7 +402,6 @@ class SNLIModel(object):
         """
         # this tracks the accumulated loss in a minibatch
         # (to take the average later)
->>>>>>> e912f61c3e14bafb2450e2145be1ba160bf873e2
         accumulated_loss = 0
         accumulated_accuracy = 0
         accumulated_num_items = 0
@@ -543,10 +434,6 @@ class SNLIModel(object):
                 """
                 feeds_for_valid = self._create_batch_feed(batch, learning_rate,
                                                           0.8, 0.0, 100)
-<<<<<<< HEAD
-=======
-
->>>>>>> e912f61c3e14bafb2450e2145be1ba160bf873e2
                 ops = [self.train_optimizer, self.final_loss, self.acc]
                 _, loss, accuracy = session.run(ops, feed_dict=feeds_for_valid)
                 accumulated_loss += loss * batch.num_items
@@ -565,15 +452,10 @@ class SNLIModel(object):
                     accumulated_num_items = 0
                     feeds_for_valid = self._create_batch_feed(valid_dataset,
                                                               0, 1, 0.0, 0)
-<<<<<<< HEAD
-                    valid_loss, valid_acc = self.run_on_dev(session,
-                                                            feeds_for_valid)
-=======
 
                     valid_loss, valid_acc = self.run_on_dev(session,
                                                             feeds_for_valid)
 
->>>>>>> e912f61c3e14bafb2450e2145be1ba160bf873e2
                     msg = '%d completed epochs, %d batches' % (i + 1, batch_counter)
                     msg += '\tTrain loss: %.4f' % avg_loss
                     msg += '\tTrain acc: %.4f' % (avg_accuracy * 100)
