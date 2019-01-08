@@ -1,33 +1,31 @@
 import abc
 import tensorflow as tf
 import numpy as np
-import utils
 import matplotlib.pyplot as plt
 from matplotlib.legend_handler import HandlerLine2D
 
 
-def attention_softmax3d(values):
+def softmax_attention_3d(values):
     """
-    Performs a softmax over the attention values.
-
-    :param values: 3d tensor with raw values
-    :return: 3d tensor, same shape as input
+    softmax_attention_3d function.
+    calculate softmax on the given 3d tensor to get prob vec
+    :param values: 3d tensor
+    :return: probs 3d vector
     """
-    original_shape = tf.shape(values)
-    num_units = original_shape[2]
-    reshaped_values = tf.reshape(values, tf.stack([-1, num_units]))
+    shape = tf.shape(values)
+    units = shape[2]
+    reshaped_values = tf.reshape(values, tf.stack([-1, units]))
     softmaxes = tf.nn.softmax(reshaped_values)
-    return tf.reshape(softmaxes, original_shape)
+    return tf.reshape(softmaxes, shape)
 
 
-def clip_sentence(sentence, sizes):
+def clip_input_sentence(sentence, sizes):
     """
-    Clip the input sentence placeholders to the length of the longest one in the
-    batch. This saves processing time.
-
-    :param sentence: tensor with shape (batch, time_steps)
-    :param sizes: tensor with shape (batch)
-    :return: tensor with shape (batch, time_steps)
+    clip_input_sentence function.
+    reshape of the given sentence so that it will have the same length as the longest sentence in the batch.
+    :param sentence: input sensence
+    :param sizes: batch sentences size
+    :return: reshaped sentence
     """
     max_batch_size = tf.reduce_max(sizes)
     clipped_sent = tf.slice(sentence, [0, 0],
@@ -35,21 +33,16 @@ def clip_sentence(sentence, sizes):
     return clipped_sent
 
 
-def mask_3d(values, sentence_sizes, mask_value, dimension=2):
+def get_3d_max_of_martix_batch(values, sentence_sizes, mask_value, dimension=2):
     """
-    Given a batch of matrices, each with shape m x n, mask the values in each
-    row after the positions indicated in sentence_sizes.
-
-    This function is supposed to mask the last columns in the raw attention
-    matrix (e_{i, j}) in cases where the sentence2 is smaller than the
-    maximum.
-
-    :param values: tensor with shape (batch_size, m, n)
-    :param sentence_sizes: tensor with shape (batch_size) containing the
-        sentence sizes that should be limited
-    :param mask_value: scalar value to assign to items after sentence size
-    :param dimension: over which dimension to mask values
-    :return: a tensor with the same shape as `values`
+    get_3d_max_of_martix_batch function.
+    the function mask the last cols in the attention matrix in case sentence 2 is shorter than
+    the maximum.
+    :param values: tensor batch_size X m X n
+    :param sentence_sizes: sentence sizes to be limited
+    :param mask_value: padding val
+    :param dimension: dimention from wich we need to operate padding
+    :return: tensor
     """
     if dimension == 1:
         values = tf.transpose(values, [0, 2, 1])
@@ -60,7 +53,6 @@ def mask_3d(values, sentence_sizes, mask_value, dimension=2):
     pad_values = mask_value * ones
     mask = tf.sequence_mask(sentence_sizes, time_steps2)
 
-    # mask is (batch_size, sentence2_size). we have to tile it for 3d
     mask3d = tf.expand_dims(mask, 1)
     mask3d = tf.tile(mask3d, (1, time_steps1, 1))
 
@@ -73,20 +65,15 @@ def mask_3d(values, sentence_sizes, mask_value, dimension=2):
 
 
 class SNLIModel(object):
-
     abc.__metaclass__ = abc.ABCMeta
 
     def __init__(self, num_units, vocab_size, embedding_size):
         """
-        Create the model based on MLP networks.
-
-        :param num_units: main dimension of the internal networks
-        :param num_classes: number of possible classes
-        :param vocab_size: size of the vocabulary
-        :param embedding_size: size of each word embedding
-        :param training: whether to create training tensors (optimizer)
-        :param project_input: whether to project input embeddings to a
-            different dimensionality
+        constructor.
+        creates the model.
+        :param num_units: hidden dim.
+        :param vocab_size: as its name.
+        :param embedding_size: embedding dim.
         """
         self.use_intra = True
         self.distance_biases = 10
@@ -98,411 +85,277 @@ class SNLIModel(object):
         Tensorflow placeholder allows us to create our computation graph,
         without needing the data right away. 
         """
-
-        # we have to supply the vocab size to allow validate_shape on the
-        # embeddings variable, which is necessary down in the graph to determine
-        # the shape of inputs at graph construction time
-        self.embeddings_ph = tf.placeholder(tf.float32, (vocab_size, embedding_size),'embeddings')
-        # sentence plaholders have shape (batch, time_steps)
-        self.sentence1 = tf.placeholder(tf.int32, (None, None), 'sentence1')
-        self.sentence2 = tf.placeholder(tf.int32, (None, None), 'sentence2')
-        self.sentence1_size = tf.placeholder(tf.int32, [None], 'sent1_size')
-        self.sentence2_size = tf.placeholder(tf.int32, [None], 'sent2_size')
+        self.embeddings_ph = tf.placeholder(tf.float32, (vocab_size, embedding_size), 'embeddings')
+        self.sen1 = tf.placeholder(tf.int32, (None, None), 'sentence1')
+        self.sen2 = tf.placeholder(tf.int32, (None, None), 'sentence2')
+        self.sen1_len = tf.placeholder(tf.int32, [None], 'sent1_size')
+        self.sen2_len = tf.placeholder(tf.int32, [None], 'sent2_size')
         self.label = tf.placeholder(tf.int32, [None], 'label')
-        self.learning_rate = tf.placeholder(tf.float32, [], name='learning_rate')
-        self.l2_constant = tf.placeholder(tf.float32, [], 'l2_constant')
-        self.clip_value = tf.placeholder(tf.float32, [], 'clip_norm')
-        self.dropout_keep = tf.placeholder(tf.float32, [], 'dropout')
-        self.embedding_size = embedding_size
-        # we initialize the embeddings from a placeholder to circumvent
-        # tensorflow's limitation of 2 GB nodes in the graph
+        self.lr = tf.placeholder(tf.float32, [], name='learning_rate')
+        self.l2_c = tf.placeholder(tf.float32, [], 'l2_constant')
+        self.clipping_val = tf.placeholder(tf.float32, [], 'clip_norm')
+        self.dropout_keep_percentage = tf.placeholder(tf.float32, [], 'dropout')
+        self.embed_size = embedding_size
         """
         Variable allows to keep object as equation, until we create the computation graph.
         """
-        self.embeddings = tf.Variable(self.embeddings_ph, trainable=False,
-                                      validate_shape=True)
+        self.E = tf.Variable(self.embeddings_ph, trainable=False,
+                             validate_shape=True)
 
-        # clip the sentences to the length of the longest one in the batch
-        # this saves processing time
         """
         Here self.sentence1 and self.sentence2 are placeholders,
         clip_sentence takes every batch in the input and shortens each
         sentence by the length of the longest sentence in the batch.
         """
-        clipped_sent1 = clip_sentence(self.sentence1, self.sentence1_size)
-        clipped_sent2 = clip_sentence(self.sentence2, self.sentence2_size)
-        embedded1 = tf.nn.embedding_lookup(self.embeddings, clipped_sent1)
-        embedded2 = tf.nn.embedding_lookup(self.embeddings, clipped_sent2)
-        repr1 = self._transformation_input(embedded1)
-        repr2 = self._transformation_input(embedded2, True)
-        # the architecture has 3 main steps: soft align, compare and aggregate
-        # alpha and beta have shape (batch, time_steps, embeddings)
-        self.alpha, self.beta = self.attend(repr1, repr2)
-        self.v1 = self.compare(repr1, self.beta, self.sentence1_size)
-        self.v2 = self.compare(repr2, self.alpha, self.sentence2_size, True)
-        self.logits = self.aggregate(self.v1, self.v2)
-        self.answer = tf.argmax(self.logits, 1, 'answer')
-
-        hits = tf.equal(tf.cast(self.answer, tf.int32), self.label)
-        self.accuracy = tf.reduce_mean(tf.cast(hits, tf.float32),
-                                       name='accuracy')
-        cross_entropy = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=self.logits, labels=self.label)
+        clipped_sen1 = clip_input_sentence(self.sen1, self.sen1_len)
+        clipped_sen2 = clip_input_sentence(self.sen2, self.sen2_len)
+        embed1 = tf.nn.embedding_lookup(self.E, clipped_sen1)
+        embed2 = tf.nn.embedding_lookup(self.E, clipped_sen2)
+        rep1 = self.transform_input(embed1)
+        rep2 = self.transform_input(embed2, True)
+        self.alpha, self.beta = self.attend_step(rep1, rep2)
+        self.V1 = self.compare_with_soft_alignment(rep1, self.beta)
+        self.V2 = self.compare_with_soft_alignment(rep2, self.alpha, True)
+        self.aggregated_v1_v2 = self.aggregate_v_representations(self.V1, self.V2)
+        self.prediction = tf.argmax(self.aggregated_v1_v2, 1, 'answer')
+        hits = tf.equal(tf.cast(self.prediction, tf.int32), self.label)
+        self.acc = tf.reduce_mean(tf.cast(hits, tf.float32),
+                                  name='accuracy')
+        cross_entropy = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=self.aggregated_v1_v2, labels=self.label)
         self.labeled_loss = tf.reduce_mean(cross_entropy)
-        weights_trust = [v for v in tf.trainable_variables() if 'weight' in v.name]
-        l2_partial_sum = sum([tf.nn.l2_loss(weight) for weight in weights_trust])
-        l2_loss = tf.multiply(self.l2_constant, l2_partial_sum, 'l2_loss')
-        self.loss = tf.add(self.labeled_loss, l2_loss, 'loss')
-        self._create_training_tensors()
+        w_trust = [v for v in tf.trainable_variables() if 'weight' in v.name]
+        l2_part_sum = sum([tf.nn.l2_loss(weight) for weight in w_trust])
+        l2_loss = tf.multiply(self.l2_c, l2_part_sum, 'l2_loss')
+        self.final_loss = tf.add(self.labeled_loss, l2_loss, 'loss')
+        self.create_tensors_for_train()
 
-    def _transformation_input(self, inputs, reuse_weights=False):
+    def transform_input(self, inputs, reuse_weights=False):
         """
-        Apply any transformations to the input embeddings
-
-        :param inputs: a tensor with shape (batch, time_steps, embeddings)
-        :return: a tensor of the same shape of the input
+        transform_input function.
+        operate transformations on the embeddings.
+        :param inputs: a tensor batch X time_steps X embeddings)
+        :param reuse_weights: indicates whther to reuse wights.
+        :return: tensor
         """
-        projected = self.project_embeddings(inputs, reuse_weights)
+        project_embed = self.project_embeddings(inputs, reuse_weights)
         self.representation_size = self.num_units
         if self.use_intra:
-            # here, repr's have shape (batch , time_steps, 2*num_units)
-            transformed = self.compute_intra_attention(projected,
-                                                       reuse_weights)
-            self.representation_size *= 2
+            transformed_embed = self.get_intra_attention_of_sentence(project_embed, reuse_weights)
+            self.representation_size = self.representation_size * 2
 
-        return transformed
+        return transformed_embed
 
-    def _get_distance_biases(self, time_steps, reuse_weights=False):
+    def get_distance_biases_for_intra_attendtion(self, time_steps, reuse_weights=False):
         """
-        Return a 2-d tensor with the values of the distance biases to be applied
-        on the intra-attention matrix of size sentence_size
-
-        :param time_steps: tensor scalar
-        :return: 2-d tensor (time_steps, time_steps)
+        get_distance_biases_for_intra_attendtion function.
+        returns tensor of distance biases to be used on the intra-attention matrix.
+        :return: tensor
         """
         with tf.variable_scope('distance-bias', reuse=reuse_weights):
-            # this is d_{i-j}
-            distance_bias = tf.get_variable('dist_bias', [self.distance_biases],
-                                            initializer=tf.zeros_initializer())
+            distance_bias_for_intra = tf.get_variable('dist_bias',
+                                                      [self.distance_biases], initializer=tf.zeros_initializer())
+            range = tf.range(0, time_steps)
+            raw_indexes = tf.tile(tf.reshape(range, [1, -1]), tf.stack([time_steps, 1])) - tf.reshape(range, [-1, 1])
+            clipped_indexes = tf.clip_by_value(raw_indexes, 0, self.distance_biases - 1)
+        return tf.nn.embedding_lookup(distance_bias_for_intra, clipped_indexes)
 
-            # messy tensor manipulation for indexing the biases
-            r = tf.range(0, time_steps)
-            r_matrix = tf.tile(tf.reshape(r, [1, -1]),
-                               tf.stack([time_steps, 1]))
-            raw_inds = r_matrix - tf.reshape(r, [-1, 1])
-            clipped_inds = tf.clip_by_value(raw_inds, 0,
-                                            self.distance_biases - 1)
-            values = tf.nn.embedding_lookup(distance_bias, clipped_inds)
-
-        return values
-
-    def compute_intra_attention(self, sentence, reuse_weights=False):
+    def get_intra_attention_of_sentence(self, sentence, reuse_weights=False):
         """
-        Compute the intra attention of a sentence. It returns a concatenation
-        of the original sentence with its attended output.
-
-        :param sentence: tensor in shape (batch, time_steps, num_units)
-        :return: a tensor in shape (batch, time_steps, 2*num_units)
+        get_intra_attention_of_sentence fnction.
+        calculates the intra attention of a sentence.
+        :param sentence: tensor of sentence
+        :return: reshaped tensor
         """
         time_steps = tf.shape(sentence)[1]
         with tf.variable_scope('intra-attention') as scope:
-            # this is F_intra in the paper
-            # f_intra1 is (batch, time_steps, num_units) and
-            # f_intra1_t is (batch, num_units, time_steps)
-            f_intra = self._apply_feedforward(sentence, scope,
-                                              reuse_weights=reuse_weights)
-            f_intra_t = tf.transpose(f_intra, [0, 2, 1])
-
-            # these are f_ij
-            # raw_attentions is (batch, time_steps, time_steps)
-            raw_attentions = tf.matmul(f_intra, f_intra_t)
-
-            # bias has shape (time_steps, time_steps)
+            f_intra_of_sen = self.apply_two_feed_forward_layers(sentence, scope, reuse_weights=reuse_weights)
+            f_intra_transpose = tf.transpose(f_intra_of_sen, [0, 2, 1])
             with tf.device('/cpu:0'):
-                bias = self._get_distance_biases(time_steps,
-                                                 reuse_weights=reuse_weights)
-
-            # bias is broadcast along batches
-            raw_attentions += bias
-            attentions = attention_softmax3d(raw_attentions)
+                bias = self.get_distance_biases_for_intra_attendtion(time_steps, reuse_weights=reuse_weights)
+            attentions = softmax_attention_3d(tf.matmul(f_intra_of_sen, f_intra_transpose) + bias)
             attended = tf.matmul(attentions, sentence)
-
         return tf.concat(axis=2, values=[sentence, attended])
 
-    def _create_training_tensors(self):
+    def create_tensors_for_train(self):
         """
-        Create the tensors used for training
+        create_tensors_for_train function.
+        the function creates tensor objects for training operation.
         """
         with tf.name_scope('training'):
-            optimizer = tf.train.AdagradOptimizer(self.learning_rate)
-            gradients, v = zip(*optimizer.compute_gradients(self.loss))
-            if self.clip_value is not None:
-                gradients, _ = tf.clip_by_global_norm(gradients,
-                                                      self.clip_value)
-            self.train_optimizer = optimizer.apply_gradients(zip(gradients, v))
+            optim = tf.train.AdagradOptimizer(self.lr)
+            grads, v = zip(*optim.compute_gradients(self.final_loss))
+            if self.clipping_val is not None:
+                grads, _ = tf.clip_by_global_norm(grads, self.clipping_val)
+            self.train_optimizer = optim.apply_gradients(zip(grads, v))
 
     def project_embeddings(self, embeddings, reuse_weights=False):
         """
-        Project word embeddings into another dimensionality
-
-        :param embeddings: embedded sentence, shape (batch, time_steps,
-            embedding_size)
-        :param reuse_weights: reuse weights in internal layers
-        :return: projected embeddings with shape (batch, time_steps, num_units)
+        project_embeddings function.
+        project the word embeddings (the glove dataset)
+        :param embeddings: embedded sentence.
+        :param reuse_weights: indicates whether to reuse weights.
+        :return: the embeddings after being projectes
         """
         time_steps = tf.shape(embeddings)[1]
         """
         When total elements in array is 100 (for example), tf.reshape with -1 makes sure
         that the shape of -1 dimension is adjusting itself to complete to 100 elements in the new shape.
         """
-        embeddings_2d = tf.reshape(embeddings, [-1, self.embedding_size])
-
+        embeddings_2d = tf.reshape(embeddings, [-1, self.embed_size])
         with tf.variable_scope('projection', reuse=reuse_weights):
             initializer = tf.random_normal_initializer(0.0, 0.1)
-            weights = tf.get_variable('weights',
-                                      [self.embedding_size, self.num_units],
-                                      initializer=initializer)
+            projected = tf.matmul(embeddings_2d, tf.get_variable('weights', [self.embed_size, self.num_units],
+                                                                 initializer=initializer))
+        projected_3d_embed = tf.reshape(projected, tf.stack([-1, time_steps, self.num_units]))
+        return projected_3d_embed
 
-            projected = tf.matmul(embeddings_2d, weights)
-
-        projected_3d = tf.reshape(projected,
-                                  tf.stack([-1, time_steps, self.num_units]))
-        return projected_3d
-
-    def _transformation_compare(self, sentence, num_units, length,
-                                reuse_weights=False):
+    def apply_tranformation_before_comparing(self, sentence, reuse_weights=False):
         """
-        Apply the transformation on each attended token before comparing.
-        In the original model, it is a two layer feed forward network.
-
-        :param sentence: a tensor with shape (batch, time_steps, num_units)
-        :param num_units: a python int indicating the third dimension of
-            sentence
-        :param length: real length of the sentence. Not used in this class.
-        :param reuse_weights: whether to reuse weights inside this scope
-        :return: a tensor with shape (batch, time_steps, num_units)
+        apply_tranformation_before_comparing function.
+        operates transformation on the attended tokens before the comparing operation.
+        :param sentence: sentence represented by tensor.
+        :param reuse_weights: indicates whether to reuse weights
+        :return: tensor
         """
-        return self._apply_feedforward(sentence, self.compare_scope,
-                                       reuse_weights)
+        return self.apply_two_feed_forward_layers(sentence, self.compare_scope, reuse_weights)
 
-    def _transformation_attend(self, sentence, num_units, length,
-                               reuse_weights=False):
+    def apploy_transformation_before_attending(self, sentence, reuse_weights=False):
         """
-        Apply the transformation on each sentence before attending over each
-        other. In the original model, it is a two layer feed forward network.
+        apploy_transformation_before_attending function.
+        operates transformation on the sentences before the attending phase.
+        :param sentence: sentence represented by tensor
+        :param num_units: integer indicates the third dim of sentence
+        :param length: originallen of sentence.
+        :param reuse_weights: indicates if we are reusing the weights
+        :return: tensor
+        """
+        return self.apply_two_feed_forward_layers(sentence, self.attend_scope, reuse_weights)
 
-        :param sentence: a tensor with shape (batch, time_steps, num_units)
-        :param num_units: a python int indicating the third dimension of
-            sentence
-        :param length: real length of the sentence. Not used in this class.
-        :param reuse_weights: whether to reuse weights inside this scope
-        :return: a tensor with shape (batch, time_steps, num_units)
+    def apply_two_feed_forward_layers(self, inputs, scope, reuse_weights=False):
         """
-        return self._apply_feedforward(sentence, self.attend_scope,
-                                       reuse_weights)
-
-    def _apply_feedforward(self, inputs, scope,
-                           reuse_weights=False, initializer=None,
-                           num_units=None):
+        apply_two_feed_forward_layers function.
+        operates two feed forward layers.
+        :param inputs: tensor
+        :param reuse_weights: boolean param - whether to reuse weights
+        :param initializer: a tensorflow initializer
+        :param num_units: hidden layer dim
+        :return: tensor.
         """
-        Apply two feed forward layers with self.num_units on the inputs.
-        :param inputs: tensor in shape (batch, time_steps, num_input_units)
-            or (batch, num_units)
-        :param reuse_weights: reuse the weights inside the same tensorflow
-            variable scope
-        :param initializer: tensorflow initializer; by default a normal
-            distribution
-        :param num_units: list of length 2 containing the number of units to be
-            used in each layer
-        :return: a tensor with shape (batch, time_steps, num_units)
-        """
-        if num_units is None:
-            num_units = [self.num_units, self.num_units]
-
+        num_units = [self.num_units, self.num_units]
         scope = scope or 'feedforward'
         with tf.variable_scope(scope, reuse=reuse_weights):
             with tf.variable_scope('layer1'):
-                inputs = tf.nn.dropout(inputs, self.dropout_keep)
-                relus = tf.layers.dense(inputs, num_units[0], tf.nn.relu,
-                                        kernel_initializer=initializer)
-
+                inputs = tf.nn.dropout(inputs, self.dropout_keep_percentage)
+                relus1 = tf.layers.dense(inputs, num_units[0], tf.nn.relu, kernel_initializer=None)
             with tf.variable_scope('layer2'):
-                inputs = tf.nn.dropout(relus, self.dropout_keep)
-                relus2 = tf.layers.dense(inputs, num_units[1], tf.nn.relu,
-                                         kernel_initializer=initializer)
-
+                inputs = tf.nn.dropout(relus1, self.dropout_keep_percentage)
+                relus2 = tf.layers.dense(inputs, num_units[1], tf.nn.relu, kernel_initializer=None)
         return relus2
 
-    def _create_aggregate_input(self, v1, v2):
+    def aggregate_input(self, v1, v2):
         """
-        Create and return the input to the aggregate step.
-
-        :param v1: tensor with shape (batch, time_steps, num_units)
-        :param v2: tensor with shape (batch, time_steps, num_units)
-        :return: a tensor with shape (batch, num_aggregate_inputs)
+        aggregate_input function.
+        operates the aggregate operation as it was explained in the report.
+        params and return vals are all tensors.
         """
-        # sum over time steps; resulting shape is (batch, num_units)
-        v1 = mask_3d(v1, self.sentence1_size, 0, 1)
-        v2 = mask_3d(v2, self.sentence2_size, 0, 1)
+        v1 = get_3d_max_of_martix_batch(v1, self.sen1_len, 0, 1)
+        v2 = get_3d_max_of_martix_batch(v2, self.sen2_len, 0, 1)
         v1_sum = tf.reduce_sum(v1, 1)
         v2_sum = tf.reduce_sum(v2, 1)
         v1_max = tf.reduce_max(v1, 1)
         v2_max = tf.reduce_max(v2, 1)
+        concated = tf.concat(axis=1, values=[v1_sum, v2_sum, v1_max, v2_max])
+        return concated
 
-        return tf.concat(axis=1, values=[v1_sum, v2_sum, v1_max, v2_max])
-
-    def attend(self, sent1, sent2):
+    def attend_step(self, sent1, sent2):
         """
-        Compute inter-sentence attention. This is step 1 (attend) in the paper
-
-        :param sent1: tensor in shape (batch, time_steps, num_units),
-            the projected sentence 1
-        :param sent2: tensor in shape (batch, time_steps, num_units)
-        :return: a tuple of 3-d tensors, alfa and beta.
+        attend_step function.
+        operates attending phase as was explained in report.
+        params and return vals are all tensors.
         """
         with tf.variable_scope('inter-attention') as self.attend_scope:
-            # this is F in the paper
-            num_units = self.representation_size
-
-            # repr1 has shape (batch, time_steps, num_units)
-            # repr2 has shape (batch, num_units, time_steps)
-            repr1 = self._transformation_attend(sent1, num_units,
-                                                self.sentence1_size)
-            repr2 = self._transformation_attend(sent2, num_units,
-                                                self.sentence2_size, True)
+            repr1 = self.apploy_transformation_before_attending(sent1)
+            repr2 = self.apploy_transformation_before_attending(sent2, True)
             repr2 = tf.transpose(repr2, [0, 2, 1])
-
-            # compute the unnormalized attention for all word pairs
-            # raw_attentions has shape (batch, time_steps1, time_steps2)
             self.raw_attentions = tf.matmul(repr1, repr2)
-
-            # now get the attention softmaxes
-            masked = mask_3d(self.raw_attentions, self.sentence2_size, -np.inf)
-            att_sent1 = attention_softmax3d(masked)
-
+            masked_vals = get_3d_max_of_martix_batch(self.raw_attentions, self.sen2_len, -np.inf)
+            att_sen1 = softmax_attention_3d(masked_vals)
             att_transposed = tf.transpose(self.raw_attentions, [0, 2, 1])
-            masked = mask_3d(att_transposed, self.sentence1_size, -np.inf)
-            att_sent2 = attention_softmax3d(masked)
-
-            self.inter_att1 = att_sent1
-            self.inter_att2 = att_sent2
-            alpha = tf.matmul(att_sent2, sent1, name='alpha')
-            beta = tf.matmul(att_sent1, sent2, name='beta')
-
+            masked_vals = get_3d_max_of_martix_batch(att_transposed, self.sen1_len, -np.inf)
+            att_sen2 = softmax_attention_3d(masked_vals)
+            self.inter_att1 = att_sen1
+            self.inter_att2 = att_sen2
+            alpha = tf.matmul(att_sen2, sent1, name='alpha')
+            beta = tf.matmul(att_sen1, sent2, name='beta')
         return alpha, beta
 
-    def compare(self, sentence, soft_alignment, sentence_length,
-                reuse_weights=False):
+    def compare_with_soft_alignment(self, sentence, soft_alignment, reuse_weights=False):
         """
-        Apply a feed forward network to compare one sentence to its
-        soft alignment with the other.
+        compare_with_soft_alignment function.
+        compare the inpute sentence to its soft alignment.
 
-        :param sentence: embedded and projected sentence,
-            shape (batch, time_steps, num_units)
-        :param soft_alignment: tensor with shape (batch, time_steps, num_units)
-        :param reuse_weights: whether to reuse weights in the internal layers
-        :return: a tensor (batch, time_steps, num_units)
+        :param sentence: embedded sentence
+        :param soft_alignment: tensor
+        :param reuse_weights: indicates if we need to reuse weights.
+        :return: tensor
         """
-        with tf.variable_scope('comparison', reuse=reuse_weights) \
-                as self.compare_scope:
-            num_units = 2 * self.representation_size
-
-            # sent_and_alignment has shape (batch, time_steps, num_units)
-            inputs = [sentence, soft_alignment, sentence - soft_alignment,
-                      sentence * soft_alignment]
-            sent_and_alignment = tf.concat(axis=2, values=inputs)
-
-            output = self._transformation_compare(sent_and_alignment, num_units, sentence_length, reuse_weights)
-
+        with tf.variable_scope('comparison', reuse=reuse_weights) as self.compare_scope:
+            sent_and_alignment = tf.concat(axis=2, values=[sentence, soft_alignment, sentence - soft_alignment,
+                                                           sentence * soft_alignment])
+            output = self.apply_tranformation_before_comparing(sent_and_alignment, reuse_weights)
         return output
 
-    def aggregate(self, v1, v2):
+    def aggregate_v_representations(self, V1, V2):
         """
-        Aggregate the representations induced from both sentences and their
-        representations
-
-        :param v1: tensor with shape (batch, time_steps, num_units)
-        :param v2: tensor with shape (batch, time_steps, num_units)
-        :return: logits over classes, shape (batch, num_classes)
+        aggregate_v_representations function.
+        params are tensors.
         """
-        inputs = self._create_aggregate_input(v1, v2)
+        inputs = self.aggregate_input(V1, V2)
         with tf.variable_scope('aggregation') as self.aggregate_scope:
-            initializer = tf.random_normal_initializer(0.0, 0.1)
+            random_init = tf.random_normal_initializer(0.0, 0.1)
             with tf.variable_scope('linear'):
-                shape = [self.num_units, self.num_classes]
-                weights_linear = tf.get_variable('weights', shape,
-                                                 initializer=initializer)
-                bias_linear = tf.get_variable('bias', [self.num_classes],
-                                              initializer=tf.zeros_initializer())
+                weights_linear = tf.get_variable('weights', [self.num_units, self.num_classes], initializer=random_init)
+                bias_linear = tf.get_variable('bias', [self.num_classes], initializer=tf.zeros_initializer())
+            pre_logits = self.apply_two_feed_forward_layers(inputs, self.aggregate_scope)
+            logits_over_classes = tf.nn.xw_plus_b(pre_logits, weights_linear, bias_linear)
+        return logits_over_classes
 
-            pre_logits = self._apply_feedforward(inputs,
-                                                 self.aggregate_scope)
-            logits = tf.nn.xw_plus_b(pre_logits, weights_linear, bias_linear)
-
-        return logits
-
-    def initialize_embeddings(self, session, embeddings):
+    def init_tf_var(self, session, embeddings):
         """
-        Initialize word embeddings
-        :param session: tensorflow session
-        :param embeddings: the contents of the word embeddings
-        :return:
+        init_tf_var function.
+        initialize the tensor flow variables.
+        :param session: tf session
+        :param embeddings: glove embeddings
         """
-        init_op = tf.variables_initializer([self.embeddings])
-        session.run(init_op, {self.embeddings_ph: embeddings})
-
-    def initialize(self, session, embeddings):
-        """
-        Initialize all tensorflow variables.
-        :param session: tensorflow session
-        :param embeddings: the contents of the word embeddings
-        """
-        init_op = tf.global_variables_initializer()
-        session.run(init_op, {self.embeddings_ph: embeddings})
+        session.run(tf.global_variables_initializer(), {self.embeddings_ph: embeddings})
 
     def _create_batch_feed(self, batch_data, learning_rate, dropout_keep,
                            l2, clip_value):
         """
-        Create a feed dictionary to be given to the tensorflow session.
+        _create_batch_feed function.
+        creates dict to the tf session.
         """
-        feeds = {self.sentence1: batch_data.sentences1,
-                 self.sentence2: batch_data.sentences2,
-                 self.sentence1_size: batch_data.sizes1,
-                 self.sentence2_size: batch_data.sizes2,
-                 self.label: batch_data.labels,
-                 self.learning_rate: learning_rate,
-                 self.dropout_keep: dropout_keep,
-                 self.l2_constant: l2,
-                 self.clip_value: clip_value
-                 }
-        return feeds
+        return {self.sen1: batch_data.sentences1, self.sen2: batch_data.sentences2, self.sen1_len: batch_data.sizes1,
+                self.sen2_len: batch_data.sizes2, self.label: batch_data.labels, self.lr: learning_rate,
+                self.dropout_keep_percentage: dropout_keep, self.l2_c: l2, self.clipping_val: clip_value}
 
-    def _run_on_validation(self, session, feeds_validation):
+    def run_on_dev(self, session, feeds_validation):
         """
-        Run the model with validation data, providing any useful information.
-
-        :return: a tuple (validation_loss, validation_acc)
+        run_on_dev function.
+        runs the model on dev.
+        :return: dev loss and acc
         """
-        loss, acc = session.run([self.loss, self.accuracy], feeds_validation)
+        loss, acc = session.run([self.final_loss, self.acc], feeds_validation)
         return loss, acc
 
     def train(self, session, train_dataset, valid_dataset):
         """
-        Train the model
-        :param session: tensorflow session
-        :type train_dataset: utils.RTEDataset
-        :type valid_dataset: utils.RTEDataset
-        :param save_dir: path to a directory to save model files
-        :param learning_rate: the initial learning rate
-        :param num_epochs: how many epochs to train the model for
-        :param batch_size: size of each batch
-        :param dropout_keep: probability of keeping units during the dropout
-        :param l2: l2 loss coefficient
-        :param clip_norm: global norm to clip gradient tensors
-        :param report_interval: number of batches before each performance
-            report
+        train function.
+        main loop traines the model and export graphs and accuracy
+        :param session: tf session
+        :type train_dataset: the train dataset
+        :type valid_dataset: the dev dataset
         """
-        # this tracks the accumulated loss in a minibatch
-        # (to take the average later)
         accumulated_loss = 0
         accumulated_accuracy = 0
         accumulated_num_items = 0
@@ -511,7 +364,6 @@ class SNLIModel(object):
         best_acc = 0
         learning_rate = 0.05
 
-        # batch counter doesn't reset after each epoch
         batch_counter = 0
         acc_train_dict = {}
         loss_train_dict = {}
@@ -519,9 +371,8 @@ class SNLIModel(object):
         loss_validation_dict = {}
         dicts_index = 0
 
-
         for i in range(epochs):
-            train_dataset.shuffle_data()
+            train_dataset.shuffle_sentences()
             batch_index = 0
             """
             batch_index indicates the start position of the current batch,
@@ -531,22 +382,19 @@ class SNLIModel(object):
             while batch_index < train_dataset.num_items:
                 batch_index2 = batch_index + batch_size
 
-                batch = train_dataset.get_batch(batch_index, batch_index2)
+                batch = train_dataset.get_batch_from_range(batch_index, batch_index2)
                 """
-                Batch here is of class RTEDataset. already a subset of train_dataset
+                Batch here is of class ComparisonDataSet. already a subset of train_dataset
                 """
                 feeds_for_valid = self._create_batch_feed(batch, learning_rate,
                                                           0.8, 0.0, 100)
-
-                ops = [self.train_optimizer, self.loss, self.accuracy]
+                ops = [self.train_optimizer, self.final_loss, self.acc]
                 _, loss, accuracy = session.run(ops, feed_dict=feeds_for_valid)
                 accumulated_loss += loss * batch.num_items
                 accumulated_accuracy += accuracy * batch.num_items
                 accumulated_num_items += batch.num_items
-
                 batch_index = batch_index2
                 batch_counter += 1
-
                 if batch_counter % 100 == 0:
                     """
                     avg_loss is the loss of all the batches seen so far.
@@ -556,32 +404,30 @@ class SNLIModel(object):
                     accumulated_loss = 0
                     accumulated_accuracy = 0
                     accumulated_num_items = 0
-
                     feeds_for_valid = self._create_batch_feed(valid_dataset,
                                                               0, 1, 0.0, 0)
-
-                    valid_loss, valid_acc = self._run_on_validation(session,
-                                                                    feeds_for_valid)
-
-                    msg = '%d completed epochs, %d batches' % (i+1, batch_counter)
+                    valid_loss, valid_acc = self.run_on_dev(session,
+                                                            feeds_for_valid)
+                    msg = '%d completed epochs, %d batches' % (i + 1, batch_counter)
                     msg += '\tTrain loss: %.4f' % avg_loss
                     msg += '\tTrain acc: %.4f' % (avg_accuracy * 100)
                     msg += '\tTest loss: %.4f' % valid_loss
                     msg += '\tTest acc: %.4f' % (valid_acc * 100)
-
                     if valid_acc > best_acc:
                         best_acc = valid_acc
                     print(msg)
-
                     acc_train_dict[dicts_index] = avg_accuracy
                     loss_train_dict[dicts_index] = avg_loss
                     acc_validation_dict[dicts_index] = valid_acc
                     loss_validation_dict[dicts_index] = valid_loss
                     dicts_index += 1
-
             self.plot_graphs(acc_train_dict, loss_train_dict, acc_validation_dict, loss_validation_dict)
 
     def plot_graphs(self, acc_train_dict, loss_train_dict, acc_validation_dict, loss_validation_dict):
+        """
+        plot_graphs function.
+        all params are acc and loss dicts on train and dev.
+        """
         # accuracy graph
         label1, = plt.plot(acc_train_dict.keys(), acc_train_dict.values(), "b-", label='Train Avg. Accuracy')
         label2, = plt.plot(acc_validation_dict.keys(), acc_validation_dict.values(), "r-",
