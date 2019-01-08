@@ -5,10 +5,13 @@ from SNLIModel import SNLIModel
 
 
 def main():
+<<<<<<< HEAD
     """
     main function.
     runs the program.
     """
+=======
+>>>>>>> e912f61c3e14bafb2450e2145be1ba160bf873e2
     # data file paths
     embedding_file = "glove.6B.200d.txt"
     train_file = "snli_1.0/snli_1.0_train.jsonl"
@@ -23,6 +26,10 @@ def main():
     word_dict, embeddings = utils.load_embeddings(embedding_file)
 
     # find out which labels are there in the data
+<<<<<<< HEAD
+=======
+    # (more flexible to different datasets)
+>>>>>>> e912f61c3e14bafb2450e2145be1ba160bf873e2
     label_dict = utils.get_label_dictionary(train_pairs)  # create dictionary of the labels and their index
     # train_pairs is list of tuples, where each tuple is ([sentence1 words], [sentence2 words], label).
     train_data = utils.create_dataset(train_pairs, word_dict, label_dict)
@@ -36,7 +43,10 @@ def main():
 
     snli_model.init_tf_var(sess, embeddings)
     print('Training part')
+<<<<<<< HEAD
     # train the model
+=======
+>>>>>>> e912f61c3e14bafb2450e2145be1ba160bf873e2
     snli_model.train(sess, train_data, test_data)
 
 

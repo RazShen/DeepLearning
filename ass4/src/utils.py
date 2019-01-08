@@ -18,11 +18,23 @@ class DatasetComparison(object):
 
     def __init__(self, sentences1, sentences2, sizes1, sizes2, labels):
         """
+<<<<<<< HEAD
         :param sentences1: matrix which contains all the first sentences - each line is a sentence vector
         :param sentences2: matrix which contains all the second sentences - each line is a sentence vector
         :param sizes1: vector of all the sizes of the first sentences
         :param sizes2: vector of all the sizes of the second sentences
         :param labels: vector of all labels indexes
+=======
+        :param sentences1: A 2D numpy array with sentences (the first in each
+            pair) composed of token indices
+        :param sentences2: A 2D numpy array with sentences (the second in each
+            pair) composed of token indices
+        :param sizes1: A 1D numpy array with the size of each sentence in the
+            first group. Sentences should be filled with the PADDING token after
+            that point
+        :param sizes2: Same as above
+        :param labels: 1D numpy array with labels as integers
+>>>>>>> e912f61c3e14bafb2450e2145be1ba160bf873e2
         """
         self.sentences1 = sentences1
         self.sentences2 = sentences2
@@ -54,12 +66,26 @@ class DatasetComparison(object):
 
 
 def tokenize_english(text):
+<<<<<<< HEAD
+=======
+    """
+    Tokenize a piece of text using the Treebank tokenizer
+
+    :return: a list of strings
+    """
+>>>>>>> e912f61c3e14bafb2450e2145be1ba160bf873e2
     return tokenizer_utils.tokenize(text)
 
 
 def shuffle_arbitrary_num_of_arrays(*arrays):
     """
+<<<<<<< HEAD
     Shuffles all the arrays given as parameters in-place with the same state.
+=======
+    Shuffle all given arrays with the same RNG state.
+
+    All shuffling is in-place, i.e., this function returns None.
+>>>>>>> e912f61c3e14bafb2450e2145be1ba160bf873e2
     """
     rng_state = np.random.get_state()
     for array in arrays:
@@ -125,8 +151,16 @@ def get_pairs_to_indices(sentences, word_dict, max_len=None):
         max_len += 1
     else:
         max_len = lenths.max()
+<<<<<<< HEAD
     shape = (len(sentences), max_len)
     padded_matrix = np.full(shape, word_dict[PADDING], dtype=np.int32)
+=======
+    # max_len is the length of the longest sentence if None
+    shape = (len(sentences), max_len)
+    # make matrix of number_of_sentences X maximum_length_of_sentence where each value is index of PAD word.
+    padded_matrix = np.full(shape, word_dict[PADDING], dtype=np.int32)
+    # Fill the array with the actual indices up to the length of each sentence.
+>>>>>>> e912f61c3e14bafb2450e2145be1ba160bf873e2
     for i, sent in enumerate(sentences):
         indices = [word_dict[token] for token in sent]
         indices = [word_dict[START]] + indices
@@ -135,9 +169,27 @@ def get_pairs_to_indices(sentences, word_dict, max_len=None):
     return padded_matrix, lenths
 
 
+<<<<<<< HEAD
 def get_random_vec(size):
     """
     Creates a vector (numpy array) with random values uniformly distributed between
+=======
+def get_sentence_sizes(pairs):
+    """
+    Count the sizes of all sentences in the pairs
+    :param pairs: a list of tuples (sent1, sent2, _). They must be
+        tokenized
+    :return: a tuple (sizes1, sizes2), as two numpy arrays
+    """
+    size_sen1 = np.array([len(pair[0]) for pair in pairs])
+    size_sen2 = np.array([len(pair[1]) for pair in pairs])
+    return (size_sen1, size_sen2)
+
+
+def get_random_vec(size):
+    """
+    Generate a random vector from a uniform distribution between
+>>>>>>> e912f61c3e14bafb2450e2145be1ba160bf873e2
     -0.1 and 0.1.
     """
     return np.random.uniform(-0.1, 0.1, size)
@@ -145,24 +197,52 @@ def get_random_vec(size):
 
 def load_embeddings(embeddings_path):
     """
+<<<<<<< HEAD
     Reads and loads word embedding vectors from text file.
     :param embeddings_path: path to words embeddings file
     :return: tuple of: word_embeds - dictionary the maps every word to the suitable vector row index in the embeddings
     matrix AND matrix in which each row is an embedding vector
+=======
+    Load and return an embedding model in either text format or
+    numpy binary format. The text format is used if vocabulary_path
+    is None (because the vocabulary is in the same file as the
+    embeddings).
+
+    :param embeddings_path: path to embeddings file
+    :return: a tuple (defaultdict, array)
+>>>>>>> e912f61c3e14bafb2450e2145be1ba160bf873e2
     """
 
     print('Getting Embedding')
     wordlist, embeds = load_text_embeddings(embeddings_path)
+<<<<<<< HEAD
     mapping = zip(wordlist, range(3, len(wordlist) + 3))
+=======
+
+    # mapping every word to tuple of (word, index) where the indices starts from 3 up to len(wordlist) + 3
+    # saving indices 0-2 for special cases.
+    mapping = zip(wordlist, range(3, len(wordlist) + 3))
+
+    # always map OOV words to 0
+>>>>>>> e912f61c3e14bafb2450e2145be1ba160bf873e2
     word_embeds = defaultdict(int, mapping)
     word_embeds[UNKNOWN] = 0
     word_embeds[PADDING] = 1
     word_embeds[START] = 2
+<<<<<<< HEAD
     vector_size = embeds.shape[1]
     # creates 3 random vectors for UNKNOWS, PADDING and START
     extra = [get_random_vec(vector_size), get_random_vec(vector_size), get_random_vec(vector_size)]
     embeds = np.append(extra, embeds, 0)
     embeds = embeds / np.linalg.norm(embeds, axis=1).reshape((-1, 1))
+=======
+    # generating 3 random vectors for unknown, padding, start
+    vector_size = embeds.shape[1]
+    extra = [get_random_vec(vector_size), get_random_vec(vector_size), get_random_vec(vector_size)]
+    embeds = np.append(extra, embeds, 0)
+    embeds = embeds / np.linalg.norm(embeds, axis=1).reshape((-1, 1))
+    # wd is a dictionary that maps from word to index
+>>>>>>> e912f61c3e14bafb2450e2145be1ba160bf873e2
     return word_embeds, embeds
 
 
@@ -175,6 +255,10 @@ def load_text_embeddings(path):
     :return: words list, embedding matrix
     """
     words = []
+<<<<<<< HEAD
+=======
+    # start from index 1 and reserve 0 for unknown
+>>>>>>> e912f61c3e14bafb2450e2145be1ba160bf873e2
     word_vecs = []
     with open(path, 'r') as f:
         for line in f:
@@ -187,12 +271,18 @@ def load_text_embeddings(path):
             word = fields[0]
             words.append(word)
             vector = np.array([float(x) for x in fields[1:]], dtype=np.float32)
+<<<<<<< HEAD
             word_vecs.append(vector)
+=======
+            word_vecs.append(vector)  # vectors is list of numpy arrays
+    # make embeddings as numpy array (numpy array of numpy arrays)
+>>>>>>> e912f61c3e14bafb2450e2145be1ba160bf873e2
     embeddings = np.array(word_vecs, dtype=np.float32)
     return words, embeddings
 
 
 def read_corpuses(train_file, test_file):
+<<<<<<< HEAD
     """
     Use
     :param train_file:
@@ -200,10 +290,14 @@ def read_corpuses(train_file, test_file):
     :return:
     """
     return load_corpus(train_file), load_corpus(test_file)
+=======
+    return read_corpus(train_file), read_corpus(test_file)
+>>>>>>> e912f61c3e14bafb2450e2145be1ba160bf873e2
 
 
 def load_corpus(filename):
     """
+<<<<<<< HEAD
     Reads .jsonl file of SNLI dataset and returns list of tuples, each tuple is an example from the dataset and contains:
     (sentence1, sentence2, label)
     :param filename: path to the data file
@@ -211,6 +305,16 @@ def load_corpus(filename):
     (sentence1, sentence2, label)
     """
     print("Reading the file " + filename)
+=======
+    Read a JSONL or TSV file with the SNLI corpus
+
+    :param filename: path to the file
+    :return: a list of tuples (first_sent, second_sent, label)
+    """
+    print("Reading the file " + filename)
+    # we are only interested in the actual sentences + gold label
+    # the corpus files has a few more things
+>>>>>>> e912f61c3e14bafb2450e2145be1ba160bf873e2
     useful_data = []
 
     with open(filename, 'rb') as f:
@@ -250,6 +354,11 @@ def load_corpus(filename):
                 tree2 = nltk.Tree.fromstring(sentence2_parse)
                 tkn1 = tree1.leaves()
                 tkn2 = tree2.leaves()
+<<<<<<< HEAD
+=======
+                # tuple t contains the list of words from sentence 1 (tokens1) and from sentence 2 (tokens2).
+                # and the label (which is the gold label)
+>>>>>>> e912f61c3e14bafb2450e2145be1ba160bf873e2
                 t = (tkn1, tkn2, label)
                 useful_data.append(t)
 
